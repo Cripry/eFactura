@@ -9,6 +9,14 @@ from infrastructure.persistence.sqlalchemy_company_repository import (
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import Config
+from typing import List
+from application.task_service import TaskService
+from infrastructure.persistence.sqlalchemy_task_repository import (
+    SQLAlchemyTaskRepository,
+)
+from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
+from uuid import UUID
 
 app = FastAPI()
 security = HTTPBearer()
@@ -34,6 +42,19 @@ class CompanyRegisterRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     auth_token: str
+
+
+class TaskRequest(BaseModel):
+    IDNO: str
+    seria: str
+    number: int
+
+
+class TaskStatusResponse(BaseModel):
+    IDNO: str
+    seria: str
+    number: int
+    status: str
 
 
 # Authorization service
@@ -68,6 +89,22 @@ def regenerate_token(
     service = CompanyService(repository)
     company = service.regenerate_token(current_company.auth_token)
     return {"auth_token": company.auth_token}
+
+
+@app.post("/tasks", status_code=status.HTTP_200_OK)
+def create_tasks(
+    tasks: List[TaskRequest],
+    current_company: Company = Depends(get_current_company),
+    db: Session = Depends(get_db),
+):
+    task_repository = SQLAlchemyTaskRepository(db)
+    task_service = TaskService(task_repository)
+
+    print("current_company.company_uuid: ", current_company.company_uuid)
+    result = task_service.create_tasks(current_company.company_uuid, tasks)
+
+    return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+
 
 
 if __name__ == "__main__":

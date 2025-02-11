@@ -1,7 +1,7 @@
 import uuid
 import hashlib
 import time
-from datetime import datetime
+import datetime
 from typing import Optional
 
 
@@ -10,13 +10,13 @@ class Company:
         self,
         name: str,
         auth_token: Optional[str] = None,
-        id: Optional[uuid.UUID] = None,
-        created_at: Optional[datetime] = None,
+        company_uuid: Optional[uuid.UUID] = None,
+        created_at: Optional[datetime.datetime] = None,
     ):
-        self.id = id or uuid.uuid4()
+        self.company_uuid = company_uuid or uuid.uuid4()
         self.name = name
         self.auth_token = auth_token or self._generate_token()
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.datetime.now(datetime.UTC)
 
     def _generate_token(self) -> str:
         """Generate a unique auth token for the company"""

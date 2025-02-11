@@ -1,3 +1,8 @@
 .venv
 .env
 __pycache__
+
+# Alembic
+server/alembic.ini
+server/alembic/versions/*.py
+!server/alembic/versions/__init__.py
