@@ -1,4 +1,4 @@
-from domain.task.task import Task
+from domain.task.task import Task, TaskStatus
 from domain.task.repository import TaskRepository
 from typing import List, Dict, Any, Set, Tuple
 from fastapi import HTTPException, status
@@ -103,4 +103,83 @@ class TaskService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"message": "Failed to get tasks status", "details": str(e)},
+            )
+
+    def get_waiting_tasks_for_machine(
+        self, company_uuid: uuid.UUID
+    ) -> Dict[str, List[Dict[str, str]]]:
+        """Get waiting tasks structured for machine processing"""
+        try:
+            # Get tasks from repository
+            tasks = self.task_repository.get_waiting_tasks_by_company(company_uuid)
+
+            # Structure the data
+            result = {}
+            for task in tasks:
+                if task.IDNO not in result:
+                    result[task.IDNO] = []
+                result[task.IDNO].append(
+                    {"seria_char": task.seria, "seria_number": str(task.number)}
+                )
+            return result
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"message": "Failed to get waiting tasks", "details": str(e)},
+            )
+
+    def update_tasks_status(
+        self, company_uuid: uuid.UUID, task_data: List[dict], new_status: str
+    ) -> Dict[str, Any]:
+        """Update status of multiple tasks"""
+        try:
+            # Validate status
+            if new_status not in TaskStatus._value2member_map_:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"message": f"Invalid status: {new_status}"},
+                )
+
+            # Convert to Task objects
+            tasks = [
+                Task(
+                    task_uuid=uuid.uuid4(),  # Not used, just for object creation
+                    IDNO=task.IDNO,
+                    seria=task.seria,
+                    number=task.number,
+                )
+                for task in task_data
+            ]
+
+            # Verify tasks belong to the company
+            for task in tasks:
+                if not self.task_repository.task_belongs_to_company(
+                    company_uuid, task.IDNO, task.seria, task.number
+                ):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail={
+                            "message": "One or more tasks do not belong to this company",
+                            "task": {
+                                "IDNO": task.IDNO,
+                                "seria": task.seria,
+                                "number": task.number,
+                            },
+                        },
+                    )
+
+            # Update tasks in repository
+            updated_count = self.task_repository.update_tasks_status(
+                company_uuid, tasks, new_status
+            )
+            return {
+                "message": f"Successfully updated {updated_count} tasks",
+                "status": new_status,
+            }
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"message": "Failed to update tasks status", "details": str(e)},
             )

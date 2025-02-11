@@ -16,7 +16,6 @@ from infrastructure.persistence.sqlalchemy_task_repository import (
 )
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
-from uuid import UUID
 
 app = FastAPI()
 security = HTTPBearer()
@@ -55,6 +54,11 @@ class TaskStatusResponse(BaseModel):
     seria: str
     number: int
     status: str
+
+
+class TaskStatusUpdateRequest(BaseModel):
+    tasks: List[TaskRequest]
+    status_update: str
 
 
 # Authorization service
@@ -116,6 +120,33 @@ def get_tasks_status(
     task_service = TaskService(task_repository)
 
     result = task_service.get_tasks_status(current_company.company_uuid, tasks)
+    return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+
+
+@app.get("/machine/tasks", status_code=status.HTTP_200_OK)
+def get_machine_tasks(
+    current_company: Company = Depends(get_current_company),
+    db: Session = Depends(get_db),
+):
+    task_repository = SQLAlchemyTaskRepository(db)
+    task_service = TaskService(task_repository)
+
+    result = task_service.get_waiting_tasks_for_machine(current_company.company_uuid)
+    return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+
+
+@app.put("/tasks/status", status_code=status.HTTP_200_OK)
+def update_tasks_status(
+    request: TaskStatusUpdateRequest,
+    current_company: Company = Depends(get_current_company),
+    db: Session = Depends(get_db),
+):
+    task_repository = SQLAlchemyTaskRepository(db)
+    task_service = TaskService(task_repository)
+
+    result = task_service.update_tasks_status(
+        current_company.company_uuid, request.tasks, request.status_update
+    )
     return JSONResponse(content=result, status_code=status.HTTP_200_OK)
 
 

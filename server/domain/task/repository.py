@@ -18,5 +18,23 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    def get_tasks_status(self, company_uuid: uuid.UUID, tasks: List[Task]) -> List[dict]:
+    def get_tasks_status(
+        self, company_uuid: uuid.UUID, tasks: List[Task]
+    ) -> List[dict]:
+        pass
+
+    @abstractmethod
+    def get_waiting_tasks_by_company(self, company_uuid: uuid.UUID) -> List[Task]:
+        pass
+
+    @abstractmethod
+    def update_tasks_status(
+        self, company_uuid: uuid.UUID, tasks: List[Task], new_status: str
+    ) -> int:
+        pass
+
+    @abstractmethod
+    def task_belongs_to_company(
+        self, company_uuid: uuid.UUID, idno: str, seria: str, number: int
+    ) -> bool:
         pass

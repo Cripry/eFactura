@@ -92,3 +92,73 @@ class SQLAlchemyTaskRepository(TaskRepository):
                     }
                 )
         return results
+
+    def get_waiting_tasks_by_company(self, company_uuid: uuid.UUID) -> List[Task]:
+        tasks = (
+            self.session.query(TaskModel)
+            .join(CompanyTaskModel)
+            .filter(
+                CompanyTaskModel.company_uuid == company_uuid,
+                CompanyTaskModel.status == TaskStatus.WAITING.value,
+            )
+            .all()
+        )
+        return [
+            Task(
+                task_uuid=task.task_uuid,
+                IDNO=task.idno,
+                seria=task.seria,
+                number=task.number,
+            )
+            for task in tasks
+        ]
+
+    def update_tasks_status(
+        self, company_uuid: uuid.UUID, tasks: List[Task], new_status: str
+    ) -> int:
+        try:
+            updated_count = 0
+            for task in tasks:
+                # Find the company task to update
+                company_task = (
+                    self.session.query(CompanyTaskModel)
+                    .join(TaskModel)
+                    .filter(
+                        TaskModel.idno == task.IDNO,
+                        TaskModel.seria == task.seria,
+                        TaskModel.number == task.number,
+                        CompanyTaskModel.company_uuid == company_uuid,
+                    )
+                    .first()
+                )
+
+                if company_task:
+                    company_task.status = new_status
+                    updated_count += 1
+
+            self.session.commit()
+            return updated_count
+        except Exception as e:
+            self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "message": "Database error while updating tasks",
+                    "details": str(e),
+                },
+            )
+
+    def task_belongs_to_company(
+        self, company_uuid: uuid.UUID, idno: str, seria: str, number: int
+    ) -> bool:
+        return bool(
+            self.session.query(CompanyTaskModel)
+            .join(TaskModel)
+            .filter(
+                TaskModel.idno == idno,
+                TaskModel.seria == seria,
+                TaskModel.number == number,
+                CompanyTaskModel.company_uuid == company_uuid,
+            )
+            .first()
+        )
