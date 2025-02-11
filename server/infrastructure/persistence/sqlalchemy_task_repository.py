@@ -12,7 +12,14 @@ class SQLAlchemyTaskRepository(TaskRepository):
     def __init__(self, session: Session):
         self.session = session
 
-    def save_tasks(self, company_uuid: uuid.UUID, tasks: List[Task]) -> CompanyTask:
+    def task_exists(self, idno: str, seria: str, number: int) -> bool:
+        return bool(
+            self.session.query(TaskModel)
+            .filter_by(idno=idno, seria=seria, number=number)
+            .first()
+        )
+
+    def save_tasks(self, company_uuid: uuid.UUID, tasks: List[Task]) -> None:
         try:
             # Create individual tasks
             for task in tasks:
@@ -34,7 +41,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 self.session.add(company_task)
 
             self.session.commit()
-            return company_task
+
         except exc.IntegrityError as e:
             self.session.rollback()
             raise HTTPException(
@@ -48,3 +55,40 @@ class SQLAlchemyTaskRepository(TaskRepository):
             .filter_by(company_uuid=company_uuid)
             .all()
         )
+
+    def get_tasks_status(
+        self, company_uuid: uuid.UUID, tasks: List[Task]
+    ) -> List[dict]:
+        results = []
+        for task in tasks:
+            company_task = (
+                self.session.query(CompanyTaskModel)
+                .join(TaskModel)
+                .filter(
+                    TaskModel.idno == task.IDNO,
+                    TaskModel.seria == task.seria,
+                    TaskModel.number == task.number,
+                    CompanyTaskModel.company_uuid == company_uuid,
+                )
+                .first()
+            )
+
+            if company_task:
+                results.append(
+                    {
+                        "IDNO": task.IDNO,
+                        "seria": task.seria,
+                        "number": task.number,
+                        "status": company_task.status,
+                    }
+                )
+            else:
+                results.append(
+                    {
+                        "IDNO": task.IDNO,
+                        "seria": task.seria,
+                        "number": task.number,
+                        "status": "not_found",
+                    }
+                )
+        return results

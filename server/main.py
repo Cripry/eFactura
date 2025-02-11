@@ -106,6 +106,18 @@ def create_tasks(
     return JSONResponse(content=result, status_code=status.HTTP_200_OK)
 
 
+@app.post("/tasks/status", status_code=status.HTTP_200_OK)
+def get_tasks_status(
+    tasks: List[TaskRequest],
+    current_company: Company = Depends(get_current_company),
+    db: Session = Depends(get_db),
+):
+    task_repository = SQLAlchemyTaskRepository(db)
+    task_service = TaskService(task_repository)
+
+    result = task_service.get_tasks_status(current_company.company_uuid, tasks)
+    return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+
 
 if __name__ == "__main__":
     import uvicorn
