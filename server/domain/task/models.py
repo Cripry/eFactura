@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 import uuid
 from domain.task.task import TaskStatus
 from domain.company.models import CompanyModel

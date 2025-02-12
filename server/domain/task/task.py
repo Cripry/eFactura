@@ -5,10 +5,10 @@ from dataclasses import dataclass
 
 
 class TaskStatus(str, Enum):
-    WAITING = "waiting"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
+    WAITING = "WAITING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
     USB_NOT_FOUND = "usb_not_found"
 
 

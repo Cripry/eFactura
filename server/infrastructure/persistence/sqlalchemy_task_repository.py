@@ -3,7 +3,7 @@ from domain.task.repository import TaskRepository
 from domain.task.task import Task, CompanyTask, TaskStatus
 from domain.task.models import TaskModel, CompanyTaskModel
 from sqlalchemy import exc
-from fastapi import HTTPException, status
+from domain.exceptions import DatabaseException
 import uuid
 from typing import List
 
@@ -44,9 +44,15 @@ class SQLAlchemyTaskRepository(TaskRepository):
 
         except exc.IntegrityError as e:
             self.session.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail={"message": "Database integrity error", "details": str(e.orig)},
+            raise DatabaseException(
+                "Database integrity error",
+                str(e.orig)
+            )
+        except Exception as e:
+            self.session.rollback()
+            raise DatabaseException(
+                "Failed to save tasks",
+                str(e)
             )
 
     def find_tasks_by_company(self, company_uuid: uuid.UUID) -> List[CompanyTask]:
@@ -140,12 +146,9 @@ class SQLAlchemyTaskRepository(TaskRepository):
             return updated_count
         except Exception as e:
             self.session.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "message": "Database error while updating tasks",
-                    "details": str(e),
-                },
+            raise DatabaseException(
+                "Database error while updating tasks",
+                str(e)
             )
 
     def task_belongs_to_company(
