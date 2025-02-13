@@ -23,7 +23,7 @@ class Company:
         raw_token = f"{self.name}{time.time()}{uuid.uuid4()}"
         return hashlib.sha256(raw_token.encode()).hexdigest()
 
-    def regenerate_token(self) -> str:
+    def regenerate_auth_token(self) -> str:
         """Regenerate the auth token"""
         self.auth_token = self._generate_token()
         return self.auth_token

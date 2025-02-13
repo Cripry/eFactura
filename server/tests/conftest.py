@@ -65,3 +65,23 @@ def test_company(db_session):
 def test_task_data():
     """Return sample task data"""
     return [{"IDNO": "123", "seria": "A", "number": 1}]
+
+
+@pytest.fixture
+def task_service(db_session):
+    from infrastructure.persistence.sqlalchemy_task_repository import (
+        SQLAlchemyTaskRepository,
+    )
+    from application.task_service import TaskService
+
+    return TaskService(SQLAlchemyTaskRepository(db_session))
+
+
+@pytest.fixture
+def company_service(db_session):
+    from infrastructure.persistence.sqlalchemy_company_repository import (
+        SQLAlchemyCompanyRepository,
+    )
+    from application.company_service import CompanyService
+
+    return CompanyService(SQLAlchemyCompanyRepository(db_session))

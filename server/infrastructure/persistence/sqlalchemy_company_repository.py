@@ -1,12 +1,12 @@
-from sqlalchemy.orm import Session
 from domain.company.repository import CompanyRepository
 from domain.company.company import Company
 from domain.company.models import CompanyModel
 from typing import Optional
+import uuid
 
 
 class SQLAlchemyCompanyRepository(CompanyRepository):
-    def __init__(self, session: Session):
+    def __init__(self, session):
         self.session = session
 
     def save(self, company: Company):
@@ -32,12 +32,28 @@ class SQLAlchemyCompanyRepository(CompanyRepository):
             )
         return None
 
-    def update(self, company: Company):
+    def find_by_uuid(self, company_uuid: uuid.UUID) -> Optional[Company]:
+        company_model = (
+            self.session.query(CompanyModel)
+            .filter_by(company_uuid=company_uuid)
+            .first()
+        )
+        if company_model:
+            return Company(
+                name=company_model.name,
+                auth_token=company_model.auth_token,
+                company_uuid=company_model.company_uuid,
+                created_at=company_model.created_at,
+            )
+        return None
+
+    def update_company(self, company: Company) -> None:
         company_model = (
             self.session.query(CompanyModel)
             .filter_by(company_uuid=company.company_uuid)
             .first()
         )
         if company_model:
+            company_model.name = company.name
             company_model.auth_token = company.auth_token
             self.session.commit()

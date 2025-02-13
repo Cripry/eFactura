@@ -8,7 +8,7 @@ from domain.exceptions import (
 from application.task_service import TaskService
 from unittest.mock import MagicMock
 from domain.task.schemas import TaskRequest
-from domain.task.task import TaskStatus
+from domain.task.task import TaskStatus, Task
 
 
 @pytest.fixture
@@ -77,3 +77,86 @@ def test_update_tasks_status_database_error(task_service, mock_repository):
     # Act & Assert
     with pytest.raises(DatabaseException):
         task_service.update_tasks_status(company_uuid, task_data, valid_status)
+
+
+def test_create_and_get_task_status(task_service, mock_repository, test_company):
+    # Arrange
+    from domain.task.schemas import TaskRequest
+
+    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+
+    # Mock repository responses
+    mock_repository.task_exists.return_value = False
+    mock_repository.save_tasks.return_value = None
+    mock_repository.get_tasks_status.return_value = [
+        {"IDNO": "123", "seria": "A", "number": 1, "status": "WAITING"}
+    ]
+
+    # Act
+    # Create task
+    task_service.create_tasks(test_company.company_uuid, [task_data])
+
+    # Get task status
+    status = task_service.get_tasks_status(test_company.company_uuid, [task_data])
+
+    # Assert
+    assert len(status) == 1
+    assert status[0]["status"] == "WAITING"
+
+
+def test_get_waiting_tasks_for_machine(task_service, mock_repository, test_company):
+    # Arrange
+    from domain.task.schemas import TaskRequest
+
+    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+
+    # Mock repository responses
+    mock_repository.task_exists.return_value = False
+    mock_repository.save_tasks.return_value = None
+    mock_repository.get_waiting_tasks_by_company.return_value = [
+        Task(task_uuid=uuid4(), IDNO="123", seria="A", number=1)
+    ]
+
+    # Act
+    # Create task
+    task_service.create_tasks(test_company.company_uuid, [task_data])
+
+    # Get waiting tasks
+    waiting_tasks = task_service.get_waiting_tasks_for_machine(
+        test_company.company_uuid
+    )
+
+    # Assert
+    assert "123" in waiting_tasks
+    assert len(waiting_tasks["123"]) == 1
+    assert waiting_tasks["123"][0]["seria_char"] == "A"
+    assert waiting_tasks["123"][0]["seria_number"] == "1"
+
+
+def test_update_and_verify_task_status(task_service, mock_repository, test_company):
+    # Arrange
+    from domain.task.schemas import TaskRequest
+
+    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    new_status = "COMPLETED"
+
+    # Mock repository responses
+    mock_repository.task_exists.return_value = False
+    mock_repository.save_tasks.return_value = None
+    mock_repository.update_tasks_status.return_value = 1
+    mock_repository.get_tasks_status.return_value = [
+        {"IDNO": "123", "seria": "A", "number": 1, "status": new_status}
+    ]
+
+    # Act
+    # Create task
+    task_service.create_tasks(test_company.company_uuid, [task_data])
+
+    # Update task status
+    task_service.update_tasks_status(test_company.company_uuid, [task_data], new_status)
+
+    # Get task status
+    status = task_service.get_tasks_status(test_company.company_uuid, [task_data])
+
+    # Assert
+    assert status[0]["status"] == new_status

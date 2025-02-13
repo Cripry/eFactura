@@ -1,4 +1,3 @@
-from sqlalchemy.orm import Session
 from domain.task.repository import TaskRepository
 from domain.task.task import Task, CompanyTask, TaskStatus
 from domain.task.models import TaskModel, CompanyTaskModel
@@ -9,7 +8,7 @@ from typing import List
 
 
 class SQLAlchemyTaskRepository(TaskRepository):
-    def __init__(self, session: Session):
+    def __init__(self, session):
         self.session = session
 
     def task_exists(self, idno: str, seria: str, number: int) -> bool:
@@ -44,16 +43,10 @@ class SQLAlchemyTaskRepository(TaskRepository):
 
         except exc.IntegrityError as e:
             self.session.rollback()
-            raise DatabaseException(
-                "Database integrity error",
-                str(e.orig)
-            )
+            raise DatabaseException("Database integrity error", str(e.orig))
         except Exception as e:
             self.session.rollback()
-            raise DatabaseException(
-                "Failed to save tasks",
-                str(e)
-            )
+            raise DatabaseException("Failed to save tasks", str(e))
 
     def find_tasks_by_company(self, company_uuid: uuid.UUID) -> List[CompanyTask]:
         return (
@@ -146,10 +139,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             return updated_count
         except Exception as e:
             self.session.rollback()
-            raise DatabaseException(
-                "Database error while updating tasks",
-                str(e)
-            )
+            raise DatabaseException("Database error while updating tasks", str(e))
 
     def task_belongs_to_company(
         self, company_uuid: uuid.UUID, idno: str, seria: str, number: int

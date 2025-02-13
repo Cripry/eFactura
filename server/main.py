@@ -76,12 +76,12 @@ def register_company(request: CompanyRegisterRequest, db=Depends(get_db)):
 
 
 @app.post("/regenerate-token", response_model=TokenResponse)
-def regenerate_token(
+def regenerate_auth_token(
     current_company: Company = Depends(get_current_company), db=Depends(get_db)
 ):
     repository = SQLAlchemyCompanyRepository(db)
     service = CompanyService(repository)
-    company = service.regenerate_token(current_company.auth_token)
+    company = service.regenerate_auth_token(current_company.auth_token)
     return {"auth_token": company.auth_token}
 
 
