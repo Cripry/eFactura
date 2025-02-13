@@ -137,18 +137,16 @@ def get_machine_tasks(
     return JSONResponse(content=result, status_code=status.HTTP_200_OK)
 
 
-@app.put("/tasks/status", status_code=status.HTTP_200_OK)
+@app.put("/tasks/status")
 def update_tasks_status(
-    request: TaskStatusUpdateRequest,
+    request: List[TaskStatusUpdateRequest],
     current_company: Company = Depends(get_current_company),
     db: Session = Depends(get_db),
 ):
     repository = SQLAlchemyTaskRepository(db)
     service = TaskService(repository)
     try:
-        return service.update_tasks_status(
-            current_company.company_uuid, request.tasks, request.status_update
-        )
+        return service.update_tasks_status(current_company.company_uuid, request)
     except InvalidStatusException as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

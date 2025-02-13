@@ -16,5 +16,7 @@ class TaskStatusResponse(BaseModel):
 
 
 class TaskStatusUpdateRequest(BaseModel):
-    tasks: List[TaskRequest]
+    IDNO: str
+    seria: str
+    number: int
     status_update: str

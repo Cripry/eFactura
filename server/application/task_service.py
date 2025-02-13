@@ -1,11 +1,10 @@
-from domain.task.task import Task, TaskStatus
+from domain.task.task import Task
 from domain.task.repository import TaskRepository
 from domain.task.schemas import TaskRequest, TaskStatusUpdateRequest
 from typing import List, Dict, Any, Set, Tuple
 from domain.exceptions import (
     DuplicateTaskException,
     TaskExistsException,
-    InvalidStatusException,
     TaskNotOwnedException,
     DatabaseException,
 )
@@ -115,7 +114,7 @@ class TaskService:
                 if task.IDNO not in result:
                     result[task.IDNO] = []
                 result[task.IDNO].append(
-                    {"seria_char": task.seria, "seria_number": str(task.number)}
+                    {"seria": task.seria, "number": str(task.number)}
                 )
             return result
         except Exception as e:
@@ -125,14 +124,8 @@ class TaskService:
         self,
         company_uuid: uuid.UUID,
         task_data: List[TaskStatusUpdateRequest],
-        new_status: str,
     ) -> Dict[str, Any]:
-        """Update status of multiple tasks"""
         try:
-            # Validate status
-            if new_status not in TaskStatus._value2member_map_:
-                raise InvalidStatusException(f"Invalid status: {new_status}")
-
             # Convert to Task objects
             tasks = [
                 Task(
@@ -160,14 +153,11 @@ class TaskService:
 
             # Update tasks in repository
             updated_count = self.task_repository.update_tasks_status(
-                company_uuid, tasks, new_status
+                company_uuid, tasks, task_data
             )
             return {
                 "message": f"Successfully updated {updated_count} tasks",
-                "status": new_status,
             }
-        except InvalidStatusException as e:
-            raise e
         except TaskNotOwnedException as e:
             raise e
         except Exception as e:

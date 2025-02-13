@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from domain.task.task import Task, CompanyTask
 import uuid
+from domain.task.schemas import TaskStatusUpdateRequest
 
 
 class TaskRepository(ABC):
@@ -29,7 +30,7 @@ class TaskRepository(ABC):
 
     @abstractmethod
     def update_tasks_status(
-        self, company_uuid: uuid.UUID, tasks: List[Task], new_status: str
+        self, company_uuid: uuid.UUID, tasks: List[Task], task_data: List[TaskStatusUpdateRequest]
     ) -> int:
         pass
 

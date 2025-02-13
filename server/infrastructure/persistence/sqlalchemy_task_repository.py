@@ -5,6 +5,7 @@ from sqlalchemy import exc
 from domain.exceptions import DatabaseException
 import uuid
 from typing import List
+from domain.task.schemas import TaskStatusUpdateRequest
 
 
 class SQLAlchemyTaskRepository(TaskRepository):
@@ -113,12 +114,11 @@ class SQLAlchemyTaskRepository(TaskRepository):
         ]
 
     def update_tasks_status(
-        self, company_uuid: uuid.UUID, tasks: List[Task], new_status: str
+        self, company_uuid: uuid.UUID, tasks: List[Task], task_data: List[TaskStatusUpdateRequest]
     ) -> int:
         try:
             updated_count = 0
-            for task in tasks:
-                # Find the company task to update
+            for task, status_data in zip(tasks, task_data):
                 company_task = (
                     self.session.query(CompanyTaskModel)
                     .join(TaskModel)
@@ -132,7 +132,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 )
 
                 if company_task:
-                    company_task.status = new_status
+                    company_task.status = status_data.status_update
                     updated_count += 1
 
             self.session.commit()

@@ -129,8 +129,8 @@ def test_get_waiting_tasks_for_machine(task_service, mock_repository, test_compa
     # Assert
     assert "123" in waiting_tasks
     assert len(waiting_tasks["123"]) == 1
-    assert waiting_tasks["123"][0]["seria_char"] == "A"
-    assert waiting_tasks["123"][0]["seria_number"] == "1"
+    assert waiting_tasks["123"][0]["seria"] == "A"
+    assert waiting_tasks["123"][0]["number"] == "1"
 
 
 def test_update_and_verify_task_status(task_service, mock_repository, test_company):
