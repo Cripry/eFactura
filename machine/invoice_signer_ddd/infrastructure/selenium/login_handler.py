@@ -1,6 +1,5 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-from machine.invoice_signer_ddd.domain.models.urls import QueryParams, UrlPaths
 from machine.invoice_signer_ddd.domain.models.worker import Worker
 from machine.invoice_signer_ddd.domain.models.session import Session
 from machine.invoice_signer_ddd.infrastructure.selenium.selectors import (

@@ -4,21 +4,41 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from urllib.parse import urlparse, parse_qs
 from machine.invoice_signer_ddd.domain.models.urls import UrlPaths, QueryParams
-from typing import Tuple, Union
+from typing import Tuple
+from selenium.webdriver.remote.webelement import WebElement
 
 
 class WaitHelper:
     def __init__(self, driver: WebDriver, timeout: int = 10):
         self.driver = driver
         self.wait = WebDriverWait(driver, timeout)
+        self.timeout = timeout
 
     def wait_for_web_element(self, selector: Tuple[By, str]):
         """Wait for a web element to be present"""
         return self.wait.until(EC.presence_of_element_located(selector))
 
-    def wait_for_web_element_clickable(self, selector: Tuple[By, str]):
-        """Wait for a web element to be clickable"""
-        return self.wait.until(EC.element_to_be_clickable(selector))
+    def wait_for_web_element_clickable(
+        self, selector: Tuple[By, str], timeout: int = None
+    ) -> WebElement:
+        """
+        Wait for a web element to be clickable with optional custom timeout
+
+        Args:
+            selector: Tuple containing By and selector value
+            timeout: Optional custom timeout in seconds (default: instance timeout)
+
+        Returns:
+            WebElement: The clickable web element
+
+        Raises:
+            TimeoutException: If element not found within timeout
+        """
+        # Use custom timeout if provided, otherwise use instance timeout
+        wait_timeout = timeout if timeout is not None else self.timeout
+        wait = WebDriverWait(self.driver, wait_timeout)
+
+        return wait.until(EC.element_to_be_clickable(selector))
 
     def wait_for_web_elements(self, selector: Tuple[By, str]):
         """Wait for multiple web elements to be present"""

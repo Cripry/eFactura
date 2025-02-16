@@ -2,7 +2,6 @@ from machine.invoice_signer_ddd.domain.models.worker import Worker
 from machine.invoice_signer_ddd.domain.models.session import Session
 from machine.invoice_signer_ddd.domain.exceptions import LoginFailedException
 import logging
-from selenium.webdriver.common.by import By
 from machine.invoice_signer_ddd.infrastructure.selenium.selectors import (
     EFacturaSelectors,
 )
@@ -32,7 +31,9 @@ class LoginService:
 
             # Navigate to e-Factura
             self.logger.info("Navigating to e-Factura platform")
-            self.navigation_service.navigate_to_efactura(worker, self.web_handler.driver)
+            self.navigation_service.navigate_to_efactura(
+                worker, self.web_handler.driver
+            )
 
             # Check for and close any popups
             self.logger.info("Checking for popups...")
@@ -62,11 +63,11 @@ class LoginService:
         4. If not found after retry, continue without error
 
         Args:
-            timeout: Time in seconds to wait between retry attempts (default: 6)
+            timeout: Time in seconds to wait for popup to appear (default: 6)
         """
-        self.logger.info("Checking for popup...")
+        self.logger.info(f"Checking for popup with timeout: {timeout} seconds...")
         try:
-            # Try to find the popup close button
+            # Try to find the popup close button with custom timeout
             close_button = self.web_handler.wait.wait_for_web_element_clickable(
                 EFacturaSelectors.POPUP_CLOSE_BUTTON.value, timeout=timeout
             )

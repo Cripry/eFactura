@@ -57,7 +57,7 @@ def main():
     except LoginFailedException as e:
         logger.error(f"Login failed: {str(e)}")
     except Exception as e:
-        logger.exception("Unexpected error occurred during login")
+        logger.exception(f"Unexpected error occurred during login: {e}")
     finally:
         logger.info("Cleaning up resources...")
         driver_manager.close_driver(driver)
