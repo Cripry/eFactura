@@ -177,3 +177,17 @@ class EfacturaWebPage:
         except Exception as e:
             self.logger.error(f"Failed to start signing procedure: {str(e)}")
             return False
+
+    def _complete_signing_process(self) -> bool:
+        """Complete the signing process (common for both roles)"""
+        self.logger.info("Starting signing procedure")
+
+        # 1. Start eFactura signing process
+        if not self.start_signing_procedure():
+            raise Exception("Failed to start signing procedure")
+
+        # 2. Complete MSign signing
+        if not self.msign_service.complete_signing(self.worker.idno, self.worker.pin):
+            raise Exception("Failed to complete MSign signing")
+
+        return True

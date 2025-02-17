@@ -61,4 +61,4 @@ class BuyerUrls(Enum):
 class SupplierUrls(Enum):
     """URLs specific to supplier role"""
 
-    pass
+    NEW_INVOICE = "/#Home/My_Draft"

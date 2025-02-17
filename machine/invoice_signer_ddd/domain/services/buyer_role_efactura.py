@@ -60,18 +60,8 @@ class BuyerRoleEfactura(EfacturaWebPage):
         return True
 
     def _complete_signing_process(self) -> bool:
-        """Complete the signing process"""
-        self.logger.info("Starting signing procedure")
-
-        # 1. Start eFactura signing process
-        if not self.start_signing_procedure():
-            raise Exception("Failed to start signing procedure")
-
-        # 2. Complete MSign signing
-        if not self.msign_service.complete_signing(self.worker.idno, self.worker.pin):
-            raise Exception("Failed to complete MSign signing")
-
-        return True
+        """Complete the signing process (specific to buyer role)"""
+        return super()._complete_signing_process()
 
     def sign_multiple_invoices(self, tasks: List[Dict[str, str]]) -> Dict[str, bool]:
         """Sign multiple invoices based on provided tasks"""

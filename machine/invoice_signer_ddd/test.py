@@ -22,10 +22,9 @@ from machine.invoice_signer_ddd.config.logging_config import setup_logging
 from machine.invoice_signer_ddd.domain.services.buyer_role_efactura import (
     BuyerRoleEfactura,
 )
-
-# from machine.invoice_signer_ddd.domain.services.supplier_role_efactura import (
-#     SupplierRoleEfactura,
-# )
+from machine.invoice_signer_ddd.domain.services.supplier_role_efactura import (
+    SupplierRoleEfactura,
+)
 
 
 def main():
@@ -55,19 +54,12 @@ def main():
         session = login_service.login_worker(worker)
         logger.info(f"Successfully logged in as worker with IDNO: {session.idno}")
 
-        # Initialize BuyerRoleEfactura with proper logging
-        efactura_service = BuyerRoleEfactura(worker, web_handler, desktop_handler)
+        # Initialize SupplierRoleEfactura
+        supplier_service = SupplierRoleEfactura(worker, web_handler, desktop_handler)
 
-        # Create payload for multiple invoices
-        invoices_to_sign = [
-            {"seria": "EAA", "number": "002541220"},
-            {"seria": "EAA", "number": "002541221"},
-            {"seria": "EAA", "number": "002541208"},
-        ]
-
-        # Sign multiple invoices
-        results = efactura_service.sign_multiple_invoices(invoices_to_sign)
-        logger.info(f"Signing results: {results}")
+        # Sign all invoices
+        result = supplier_service.sign_all_invoices()
+        logger.info(f"Signing all invoices result: {result}")
 
     except LoginFailedException as e:
         logger.error(f"Login failed: {str(e)}")

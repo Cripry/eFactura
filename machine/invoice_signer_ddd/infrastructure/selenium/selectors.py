@@ -47,6 +47,7 @@ class EFacturaSelectors(Enum):
     )
     START_SIGN_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[3]')
     FINAL_SIGN_BUTTON = (By.XPATH, '//*[@id="btnSign"]')
+    SELECT_ALL_CHECKBOX = (By.XPATH, '//*[@id="content"]/div[3]/div/div[3]/table/tbody/tr/td[1]/input')
 
 
 class SFSSelectors(Enum):
