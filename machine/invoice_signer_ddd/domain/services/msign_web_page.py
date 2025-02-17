@@ -1,4 +1,3 @@
-from typing import Optional
 from selenium.webdriver.remote.webelement import WebElement
 from machine.invoice_signer_ddd.domain.models.component_characteristics import (
     ComponentCharacteristics,

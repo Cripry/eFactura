@@ -19,9 +19,6 @@ from machine.invoice_signer_ddd.infrastructure.desktop.msign_handler import (
 from machine.invoice_signer_ddd.domain.exceptions import LoginFailedException
 from machine.invoice_signer_ddd.config.logging_config import setup_logging
 
-from machine.invoice_signer_ddd.domain.services.buyer_role_efactura import (
-    BuyerRoleEfactura,
-)
 from machine.invoice_signer_ddd.domain.services.supplier_role_efactura import (
     SupplierRoleEfactura,
 )
