@@ -8,10 +8,9 @@ from machine.invoice_signer_ddd.infrastructure.selenium.selectors import (
 
 
 class LoginService:
-    def __init__(self, web_handler, desktop_handler, navigation_service):
+    def __init__(self, web_handler, desktop_handler):
         self.web_handler = web_handler
         self.desktop_handler = desktop_handler
-        self.navigation_service = navigation_service
         self.logger = logging.getLogger(__name__)
 
     def login_worker(self, worker: Worker) -> Session:
@@ -31,9 +30,7 @@ class LoginService:
 
             # Navigate to e-Factura
             self.logger.info("Navigating to e-Factura platform")
-            self.navigation_service.navigate_to_efactura(
-                worker, self.web_handler.driver
-            )
+            self.web_handler.navigate_to_efactura(worker)
 
             # Check for and close any popups
             self.logger.info("Checking for popups...")

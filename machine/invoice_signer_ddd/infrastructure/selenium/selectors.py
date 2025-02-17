@@ -30,4 +30,36 @@ class LoginPageSelectors(Enum):
 
 class EFacturaSelectors(Enum):
     """Selectors for e-Factura website"""
+
     POPUP_CLOSE_BUTTON = (By.XPATH, '//*[@id="popupMessage"]/button')
+    SERIA_INPUT = (
+        By.XPATH,
+        '//*[@id="sec_info"]/table/tbody/tr[1]/td[1]/table/tbody/tr[2]/td/input[2]',
+    )
+    NUMBER_INPUT = (
+        By.XPATH,
+        '//*[@id="sec_info"]/table/tbody/tr[1]/td[2]/table/tbody/tr[2]/td/input[2]',
+    )
+    SEARCH_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[1]/div[2]/a[2]')
+    INVOICE_TABLE = (
+        By.XPATH,
+        '//*[@id="content"]/div[3]/div/div[3]/div[1]/table/tbody',
+    )
+    START_SIGN_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[3]')
+    FINAL_SIGN_BUTTON = (By.XPATH, '//*[@id="btnSign"]')
+
+
+class SFSSelectors(Enum):
+    """Selectors for SFS portal"""
+
+    COMPANY_GRID_ITEM = (By.CLASS_NAME, "compania-grid-item--content")
+    COMPANY_IDNO = (By.CLASS_NAME, "subtitle_name-company")
+    ADMIN_BUTTON = (By.CLASS_NAME, "btn_company-default")
+    EFACTURA_BLOCK = (By.CLASS_NAME, "inner_block_top-promoternus")
+
+
+class MSignSelectors(Enum):
+    """Selectors for MSign website"""
+    USB_SIGN_OPTION = (By.CLASS_NAME, "authentification-block")
+    CERTIFICATE_CARDS = (By.CLASS_NAME, "card")
+    SIGN_BUTTON = (By.CLASS_NAME, "btn")

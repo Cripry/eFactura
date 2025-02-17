@@ -22,3 +22,43 @@ class CompanyUrls:
     def get_url(cls, environment: str) -> str:
         """Get URL for specified environment"""
         return cls.URLS.get(environment.upper())
+
+
+class EfacturaBaseUrls:
+    URLS = {
+        "TEST": "https://efactura-pre.sfs.md",
+        "PROD": "https://efactura.sfs.md",
+    }
+
+    @classmethod
+    def get_base_url(cls, environment: str) -> str:
+        return cls.URLS.get(environment.upper())
+
+
+class SFSBaseUrls:
+    SFS_BASE_URLS = {
+        "TEST": "https://preproductie.sfs.md/ro",
+        "PROD": "https://sfs.md/ro",
+    }
+
+    @classmethod
+    def get_base_url(cls, environment: str) -> str:
+        return cls.SFS_BASE_URLS.get(environment.upper())
+
+
+class EfacturaUrls(Enum):
+    """Common URLs for eFactura"""
+
+    pass
+
+
+class BuyerUrls(Enum):
+    """URLs specific to buyer role"""
+
+    INVOICES_TO_SIGN = "/#Home/ToAccept"
+
+
+class SupplierUrls(Enum):
+    """URLs specific to supplier role"""
+
+    pass

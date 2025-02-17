@@ -4,11 +4,9 @@ from machine.invoice_signer_ddd.domain.models.worker import Worker
 from machine.invoice_signer_ddd.domain.models.session import Session
 from machine.invoice_signer_ddd.infrastructure.selenium.selectors import (
     LoginPageSelectors,
+    SFSSelectors,
 )
 from machine.invoice_signer_ddd.domain.exceptions import CertificateNotFoundException
-from machine.invoice_signer_ddd.infrastructure.config.environment_config import (
-    EnvironmentConfig,
-)
 from machine.invoice_signer_ddd.infrastructure.selenium.wait_helper import (
     WaitHelper,
 )
@@ -21,20 +19,28 @@ from machine.invoice_signer_ddd.infrastructure.selenium.wait_condition_handler i
 import logging
 import time
 from selenium.webdriver.support.select import Select
+from machine.invoice_signer_ddd.domain.models.urls import (
+    EfacturaBaseUrls,
+    SFSBaseUrls,
+    CompanyUrls,
+)
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webelement import WebElement
 
 
 class SeleniumLoginHandler:
     def __init__(self, driver: WebDriver, environment: str):
         self.driver = driver
         self.environment = environment
-        self.base_url = EnvironmentConfig.get_base_url(environment)
+        self.sfs_base_url = SFSBaseUrls.get_base_url(environment)
+        self.efactura_base_url = EfacturaBaseUrls.get_base_url(environment)
         self.wait = WaitHelper(self.driver, 10)
         self.condition_handler = WaitConditionHandler(self.driver)
         self.logger = logging.getLogger(__name__)
 
     def navigate_to_sfs(self) -> None:
-        self.logger.info(f"Navigating to SFS portal: {self.base_url}")
-        self.driver.get(self.base_url)
+        self.logger.info(f"Navigating to SFS portal: {self.sfs_base_url}")
+        self.driver.get(self.sfs_base_url)
 
     def click_cabinet_button(self) -> None:
         self.logger.debug("Clicking cabinet button")
@@ -61,6 +67,9 @@ class SeleniumLoginHandler:
             self.condition_handler.wait_for_characteristics(
                 ComponentCharacteristics.CERTIFICATE_PAGE
             )
+
+            # Remove debug bar
+            self._remove_debug_bar()
 
             container = self.driver.find_element(
                 *LoginPageSelectors.CERTIFICATES_CONTAINER.value
@@ -106,6 +115,9 @@ class SeleniumLoginHandler:
             person_type_select = self.wait.wait_for_web_element(
                 LoginPageSelectors.PERSON_TYPE_SELECT.value
             )
+            # Remove debug bar
+            self._remove_debug_bar()
+
             select = Select(person_type_select)
             select.select_by_value("juridic")
             time.sleep(1)
@@ -212,3 +224,119 @@ class SeleniumLoginHandler:
             print(f"Successfully navigated to: {current_url}")
 
         time.sleep(timeout)  # Wait for page to load completely
+
+    def _remove_debug_bar(self):
+        """Remove PHP debug bar if it exists"""
+        try:
+            time.sleep(1)
+            debug_bar = self.driver.find_element(By.CLASS_NAME, "phpdebugbar")
+            if debug_bar:
+                self.driver.execute_script(
+                    "var debugBar = document.querySelector('.phpdebugbar'); "
+                    "if(debugBar) { debugBar.remove(); }"
+                )
+                print("Debug bar removed")
+        except Exception:
+            pass  # Debug bar not found, continue normally
+
+    def navigate_to_efactura(self, worker: Worker) -> None:
+        """Navigate to e-factura platform and select company"""
+        self.logger.info("Navigating to e-Factura platform")
+        try:
+            # Use sfs_base_url for initial navigation
+            self.navigate_to_url(
+                CompanyUrls.get_url(self.environment),
+                retry_until_success=True,
+            )
+
+            # Remove debug bar
+            self._remove_debug_bar()
+
+            # Find and select company
+            target_row = self._find_company_row_by_idno(worker.idno)
+            self._click_administration_button(target_row)
+
+            # Remove debug bar
+            self._remove_debug_bar()
+
+            # Handle e-Factura block
+            self._find_and_click_efactura_block()
+
+            # Handle window switching
+            self._switch_to_efactura_window()
+
+            self.logger.info("Successfully navigated to e-Factura")
+            time.sleep(2)  # Wait for page to load
+
+        except Exception as e:
+            self.logger.error(f"Failed to navigate to e-factura platform: {str(e)}")
+            raise Exception(f"Navigation to e-Factura failed: {str(e)}")
+
+    def _find_company_row_by_idno(self, idno: str) -> WebElement:
+        """Find company row by IDNO"""
+        self.logger.info(f"Searching for company with IDNO: {idno}")
+        company_rows = self.wait.wait_for_web_elements(
+            SFSSelectors.COMPANY_GRID_ITEM.value
+        )
+
+        if not company_rows:
+            raise Exception("No company rows found on the page")
+
+        for row in company_rows:
+            try:
+                idno_span = row.find_element(*SFSSelectors.COMPANY_IDNO.value)
+                if idno in idno_span.text:
+                    self.logger.info(f"Found company row with IDNO {idno}")
+                    return row
+            except Exception:
+                continue
+
+        raise Exception(f"Company row with IDNO {idno} not found")
+
+    def _click_administration_button(self, row: WebElement) -> None:
+        """Click administration button for a company row"""
+        self.logger.info("Clicking Administration button...")
+        administration_button = row.find_element(*SFSSelectors.ADMIN_BUTTON.value)
+        administration_button.click()
+        self.logger.info("Successfully clicked Administration button")
+
+    def _find_and_click_efactura_block(self) -> None:
+        """Find and click e-Factura block"""
+        self.logger.info("Looking for e-Factura block...")
+        time.sleep(2)  # Wait for blocks to load
+
+        services_blocks = self.wait.wait_for_web_elements(
+            SFSSelectors.EFACTURA_BLOCK.value
+        )
+
+        for block in services_blocks:
+            if "e-Factura" in block.text:
+                self.logger.info("Found e-Factura block")
+                block.click()
+                self.logger.info("Clicked e-Factura block")
+                return
+
+        raise Exception("e-Factura block not found")
+
+    def _switch_to_efactura_window(self) -> None:
+        """Handle window switching after clicking e-Factura block"""
+        # Store the current window handle before clicking
+        original_window = self.driver.current_window_handle
+
+        time.sleep(2)  # Wait for new window
+
+        # Wait for new window and switch to it
+        WebDriverWait(self.driver, 10).until(lambda d: len(d.window_handles) > 1)
+
+        # Switch to the new window
+        for window_handle in self.driver.window_handles:
+            if window_handle != original_window:
+                self.driver.switch_to.window(window_handle)
+                break
+
+        # Close original window
+        self.driver.switch_to.window(original_window)
+        self.driver.close()
+
+        # Switch back to e-Factura window
+        self.driver.switch_to.window(self.driver.window_handles[0])
