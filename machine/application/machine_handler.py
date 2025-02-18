@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List
 from config import Config
 from domain.models import CompanyTasks, Task
-from infrastructure.api_client import APIClient
+from machine.infrastructure.api_client import APIClient
 from domain.task_executor import TaskExecutor
 
 
