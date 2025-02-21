@@ -17,7 +17,7 @@ class CertificateNotFoundException(Exception):
     """Exception raised when certificate is not found"""
 
     def __init__(self, idno: str):
-        super().__init__(f"Certificate with IDNO {idno} not found")
+        super().__init__(f"Certificate with idno {idno} not found")
 
 
 class LoginFailedException(Exception):

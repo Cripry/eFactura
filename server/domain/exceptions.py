@@ -1,3 +1,7 @@
+from typing import List
+import uuid
+
+
 class BusinessException(Exception):
     """Base class for all business exceptions"""
 
@@ -7,12 +11,13 @@ class BusinessException(Exception):
         self.code = code
 
 
-class DuplicateTaskException(BusinessException):
+class DuplicateTaskException(Exception):
     """Raised when duplicate tasks are found"""
 
-    def __init__(self, message: str, duplicates: list):
-        super().__init__(message, "DUPLICATE_TASKS")
+    def __init__(self, message: str, duplicates: List[dict] = None):
+        self.message = message
         self.duplicates = duplicates
+        super().__init__(self.message)
 
 
 class TaskExistsException(BusinessException):
@@ -33,9 +38,16 @@ class InvalidStatusException(BusinessException):
 class TaskNotOwnedException(BusinessException):
     """Raised when tasks don't belong to company"""
 
-    def __init__(self, message: str, task_details: dict):
+    def __init__(self, message: str):
         super().__init__(message, "TASK_NOT_OWNED")
-        self.task_details = task_details
+
+
+class TaskNotFoundException(BusinessException):
+    """Raised when task is not found"""
+
+    def __init__(self, message: str, task_uuid: uuid.UUID):
+        super().__init__(message, "TASK_NOT_FOUND")
+        self.task_uuid = task_uuid
 
 
 class DatabaseException(BusinessException):

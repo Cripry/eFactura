@@ -59,7 +59,7 @@ class SeleniumLoginHandler:
         element.click()
 
     def select_certificate(self, idno: str) -> bool:
-        self.logger.info(f"Selecting certificate for IDNO: {idno}")
+        self.logger.info(f"Selecting certificate for idno: {idno}")
 
         try:
             # Wait for certificate page to load
@@ -129,7 +129,7 @@ class SeleniumLoginHandler:
             company_dropdown.click()
             time.sleep(2)
 
-            # Find company by IDNO
+            # Find company by idno
             companies_container = self.wait.wait_for_web_element(
                 LoginPageSelectors.COMPANIES_LIST.value
             )
@@ -140,13 +140,13 @@ class SeleniumLoginHandler:
             company_found = False
             for company in companies:
                 if worker.idno in company.text:
-                    self.logger.info(f"Found company with IDNO {worker.idno}")
+                    self.logger.info(f"Found company with idno {worker.idno}")
                     company.click()
                     company_found = True
                     break
 
             if not company_found:
-                raise Exception(f"Company with IDNO {worker.idno} not found")
+                raise Exception(f"Company with idno {worker.idno} not found")
 
             time.sleep(1)
 
@@ -272,8 +272,8 @@ class SeleniumLoginHandler:
             raise Exception(f"Navigation to e-Factura failed: {str(e)}")
 
     def _find_company_row_by_idno(self, idno: str) -> WebElement:
-        """Find company row by IDNO"""
-        self.logger.info(f"Searching for company with IDNO: {idno}")
+        """Find company row by idno"""
+        self.logger.info(f"Searching for company with idno: {idno}")
         company_rows = self.wait.wait_for_web_elements(
             SFSSelectors.COMPANY_GRID_ITEM.value
         )
@@ -283,14 +283,14 @@ class SeleniumLoginHandler:
 
         for row in company_rows:
             try:
-                idno_span = row.find_element(*SFSSelectors.COMPANY_IDNO.value)
+                idno_span = row.find_element(*SFSSelectors.COMPANY_idno.value)
                 if idno in idno_span.text:
-                    self.logger.info(f"Found company row with IDNO {idno}")
+                    self.logger.info(f"Found company row with idno {idno}")
                     return row
             except Exception:
                 continue
 
-        raise Exception(f"Company row with IDNO {idno} not found")
+        raise Exception(f"Company row with idno {idno} not found")
 
     def _click_administration_button(self, row: WebElement) -> None:
         """Click administration button for a company row"""

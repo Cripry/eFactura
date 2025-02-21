@@ -26,7 +26,7 @@ def test_save_tasks(db_session):
     db_session.add(company)
     db_session.flush()
 
-    tasks = [Task(task_uuid=uuid4(), IDNO="123", seria="A", number=1)]
+    tasks = [Task(task_uuid=uuid4(), idno="123", seria="A", number=1)]
 
     # Act
     repository.save_tasks(company_uuid, tasks)
@@ -52,8 +52,8 @@ def test_save_tasks_integrity_error(db_session):
 
     # Create duplicate tasks
     tasks = [
-        Task(task_uuid=uuid4(), IDNO="123", seria="A", number=1),
-        Task(task_uuid=uuid4(), IDNO="123", seria="A", number=1),
+        Task(task_uuid=uuid4(), idno="123", seria="A", number=1),
+        Task(task_uuid=uuid4(), idno="123", seria="A", number=1),
     ]
 
     # Act & Assert

@@ -23,7 +23,7 @@ def task_service(mock_repository):
 
 def test_create_tasks_success(task_service, mock_repository, test_company):
     # Arrange
-    task_data = [TaskRequest(IDNO="123", seria="A", number=1)]
+    task_data = [TaskRequest(idno="123", seria="A", number=1)]
     mock_repository.task_exists.return_value = False
 
     # Act
@@ -37,7 +37,7 @@ def test_create_tasks_success(task_service, mock_repository, test_company):
 def test_create_tasks_duplicate(task_service, mock_repository):
 
     company_uuid = uuid4()
-    task_data = [TaskRequest(IDNO="123", seria="A", number=1)]
+    task_data = [TaskRequest(idno="123", seria="A", number=1)]
 
     # Mock the repository to return existing tasks
     mock_repository.task_exists.return_value = True
@@ -49,13 +49,13 @@ def test_create_tasks_duplicate(task_service, mock_repository):
 
     # Verify exception details
     assert "already exist in the database" in str(exc_info.value)
-    assert exc_info.value.existing_tasks == [{"IDNO": "123", "seria": "A", "number": 1}]
+    assert exc_info.value.existing_tasks == [{"idno": "123", "seria": "A", "number": 1}]
 
 
 def test_update_tasks_status_invalid_status(task_service, mock_repository):
     # Arrange
     company_uuid = uuid4()
-    task_data = [{"IDNO": "123", "seria": "A", "number": 1}]
+    task_data = [{"idno": "123", "seria": "A", "number": 1}]
     invalid_status = "INVALID_STATUS"
 
     # Act & Assert
@@ -68,7 +68,7 @@ def test_update_tasks_status_database_error(task_service, mock_repository):
     from domain.task.schemas import TaskRequest
 
     company_uuid = uuid4()
-    task_data = [TaskRequest(IDNO="123", seria="A", number=1)]
+    task_data = [TaskRequest(idno="123", seria="A", number=1)]
     mock_repository.update_tasks_status.side_effect = Exception("DB error")
 
     # Use a valid status from TaskStatus enum
@@ -83,13 +83,13 @@ def test_create_and_get_task_status(task_service, mock_repository, test_company)
     # Arrange
     from domain.task.schemas import TaskRequest
 
-    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    task_data = TaskRequest(idno="123", seria="A", number=1)
 
     # Mock repository responses
     mock_repository.task_exists.return_value = False
     mock_repository.save_tasks.return_value = None
     mock_repository.get_tasks_status.return_value = [
-        {"IDNO": "123", "seria": "A", "number": 1, "status": "WAITING"}
+        {"idno": "123", "seria": "A", "number": 1, "status": "WAITING"}
     ]
 
     # Act
@@ -108,13 +108,13 @@ def test_get_waiting_tasks_for_machine(task_service, mock_repository, test_compa
     # Arrange
     from domain.task.schemas import TaskRequest
 
-    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    task_data = TaskRequest(idno="123", seria="A", number=1)
 
     # Mock repository responses
     mock_repository.task_exists.return_value = False
     mock_repository.save_tasks.return_value = None
     mock_repository.get_waiting_tasks_by_company.return_value = [
-        Task(task_uuid=uuid4(), IDNO="123", seria="A", number=1)
+        Task(task_uuid=uuid4(), idno="123", seria="A", number=1)
     ]
 
     # Act
@@ -137,7 +137,7 @@ def test_update_and_verify_task_status(task_service, mock_repository, test_compa
     # Arrange
     from domain.task.schemas import TaskRequest
 
-    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    task_data = TaskRequest(idno="123", seria="A", number=1)
     new_status = "COMPLETED"
 
     # Mock repository responses
@@ -145,7 +145,7 @@ def test_update_and_verify_task_status(task_service, mock_repository, test_compa
     mock_repository.save_tasks.return_value = None
     mock_repository.update_tasks_status.return_value = 1
     mock_repository.get_tasks_status.return_value = [
-        {"IDNO": "123", "seria": "A", "number": 1, "status": new_status}
+        {"idno": "123", "seria": "A", "number": 1, "status": new_status}
     ]
 
     # Act

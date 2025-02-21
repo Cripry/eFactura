@@ -2,7 +2,7 @@ def test_create_and_get_task_status(db_session, task_service, test_company):
     # Arrange
     from domain.task.schemas import TaskRequest
 
-    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    task_data = TaskRequest(idno="123", seria="A", number=1)
 
     # Act
     # Create task
@@ -22,9 +22,9 @@ def test_task_grouping_for_machine(db_session, task_service, test_company):
     from domain.task.schemas import TaskRequest
 
     tasks_data = [
-        TaskRequest(IDNO="123", seria="A", number=1),
-        TaskRequest(IDNO="123", seria="B", number=2),
-        TaskRequest(IDNO="456", seria="C", number=3),
+        TaskRequest(idno="123", seria="A", number=1),
+        TaskRequest(idno="123", seria="B", number=2),
+        TaskRequest(idno="456", seria="C", number=3),
     ]
 
     # Act
@@ -47,7 +47,7 @@ def test_task_status_update(db_session, task_service, test_company):
     # Arrange
     from domain.task.schemas import TaskRequest
 
-    task_data = TaskRequest(IDNO="123", seria="A", number=1)
+    task_data = TaskRequest(idno="123", seria="A", number=1)
     new_status = "COMPLETED"
 
     # Act

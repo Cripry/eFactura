@@ -24,7 +24,7 @@ class APIClient:
         self.logger.info("Updating task statuses on server...")
         payload = [
             {
-                "IDNO": result.idno,
+                "idno": result.idno,
                 "seria": result.seria,
                 "number": result.number,
                 "status_update": result.status.value,

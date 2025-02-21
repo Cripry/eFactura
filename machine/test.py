@@ -49,7 +49,7 @@ def main():
     try:
         logger.info("Starting login process...")
         session = login_service.login_worker(worker)
-        logger.info(f"Successfully logged in as worker with IDNO: {session.idno}")
+        logger.info(f"Successfully logged in as worker with idno: {session.idno}")
 
         # Initialize SupplierRoleEfactura
         supplier_service = SupplierRoleEfactura(worker, web_handler, desktop_handler)

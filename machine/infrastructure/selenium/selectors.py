@@ -47,20 +47,24 @@ class EFacturaSelectors(Enum):
     )
     START_SIGN_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[3]')
     FINAL_SIGN_BUTTON = (By.XPATH, '//*[@id="btnSign"]')
-    SELECT_ALL_CHECKBOX = (By.XPATH, '//*[@id="content"]/div[3]/div/div[3]/table/tbody/tr/td[1]/input')
+    SELECT_ALL_CHECKBOX = (
+        By.XPATH,
+        '//*[@id="content"]/div[3]/div/div[3]/table/tbody/tr/td[1]/input',
+    )
 
 
 class SFSSelectors(Enum):
     """Selectors for SFS portal"""
 
     COMPANY_GRID_ITEM = (By.CLASS_NAME, "compania-grid-item--content")
-    COMPANY_IDNO = (By.CLASS_NAME, "subtitle_name-company")
+    COMPANY_idno = (By.CLASS_NAME, "subtitle_name-company")
     ADMIN_BUTTON = (By.CLASS_NAME, "btn_company-default")
     EFACTURA_BLOCK = (By.CLASS_NAME, "inner_block_top-promoternus")
 
 
 class MSignSelectors(Enum):
     """Selectors for MSign website"""
+
     USB_SIGN_OPTION = (By.CLASS_NAME, "authentification-block")
     CERTIFICATE_CARDS = (By.CLASS_NAME, "card")
     SIGN_BUTTON = (By.CLASS_NAME, "btn")

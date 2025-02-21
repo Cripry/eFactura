@@ -10,10 +10,10 @@ def test_task_creation():
     number = 1
 
     # Act
-    task = Task(task_uuid=task_uuid, IDNO=idno, seria=seria, number=number)
+    task = Task(task_uuid=task_uuid, idno=idno, seria=seria, number=number)
 
     # Assert
     assert task.task_uuid == task_uuid
-    assert task.IDNO == idno
+    assert task.idno == idno
     assert task.seria == seria
     assert task.number == number

@@ -35,7 +35,7 @@ class CompanyTasks:
 
 
 class TaskRequest(BaseModel):
-    IDNO: str
+    idno: str
     seria: str
     number: int
 

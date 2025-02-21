@@ -35,18 +35,18 @@ class MSignWebPage:
         self._scroll_and_click(usb_option)
 
     def _find_certificate_card(self, idno: str) -> WebElement:
-        """Find certificate card by IDNO"""
-        self.logger.info(f"Looking for certificate card with IDNO: {idno}")
+        """Find certificate card by idno"""
+        self.logger.info(f"Looking for certificate card with idno: {idno}")
         certificate_cards = self.web_handler.wait.wait_for_web_elements(
             MSignSelectors.CERTIFICATE_CARDS.value
         )
 
         for card in certificate_cards:
             if idno in card.text:
-                self.logger.info(f"Found certificate card with IDNO {idno}")
+                self.logger.info(f"Found certificate card with idno {idno}")
                 return card
 
-        raise Exception(f"Certificate card with IDNO {idno} not found")
+        raise Exception(f"Certificate card with idno {idno} not found")
 
     def _click_sign_button(self, card: WebElement) -> None:
         """Click sign button within a certificate card"""
