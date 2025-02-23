@@ -5,9 +5,6 @@ from machine.domain.models.dataclass.dataclass import (
 
 from machine.domain.exceptions import LoginFailedException
 import logging
-from machine.infrastructure.selenium.selectors import (
-    EFacturaSelectors,
-)
 
 
 class LoginService:
@@ -35,10 +32,6 @@ class LoginService:
             self.logger.info("Navigating to e-Factura platform")
             self.web_handler.navigate_to_efactura(worker)
 
-            # Check for and close any popups
-            self.logger.info("Checking for popups...")
-            self.close_popup_if_exists()
-
             self.logger.info("Login process completed successfully")
             return session
         except Exception as e:
@@ -51,35 +44,3 @@ class LoginService:
 
     def is_logged_in(self, session: Session) -> bool:
         return self.auth_service.validate_session(session)
-
-    def close_popup_if_exists(self, timeout: int = 6) -> None:
-        """
-        Attempt to close any popup that might be present on the page.
-
-        This method will:
-        1. Look for a popup close button using selector from EFacturaSelectors
-        2. If not found immediately, retry after specified timeout
-        3. If found, click the button to close the popup
-        4. If not found after retry, continue without error
-
-        Args:
-            timeout: Time in seconds to wait for popup to appear (default: 6)
-        """
-        self.logger.info(f"Checking for popup with timeout: {timeout} seconds...")
-        try:
-            # Try to find the popup close button with custom timeout
-            close_button = self.web_handler.wait.wait_for_web_element_clickable(
-                EFacturaSelectors.POPUP_CLOSE_BUTTON.value, timeout=timeout
-            )
-
-            if close_button:
-                self.logger.info("Popup found - closing it")
-                close_button.click()
-                self.logger.info("Popup closed successfully")
-            else:
-                self.logger.info("No popup found")
-
-        except Exception as e:
-            self.logger.debug(f"No popup found or could not close: {str(e)}")
-            # Continue execution even if popup not found
-            pass

@@ -191,3 +191,29 @@ class EfacturaWebPage:
             raise Exception("Failed to complete MSign signing")
 
         return True
+
+    def close_popup_if_exists(self, timeout: int = 6) -> None:
+        """
+        Attempt to close any popup that might be present on the page.
+
+        Args:
+            timeout: Time in seconds to wait for popup to appear (default: 6)
+        """
+        self.logger.info(f"Checking for popup with timeout: {timeout} seconds...")
+        try:
+            # Try to find the popup close button with custom timeout
+            close_button = self.web_handler.wait.wait_for_web_element_clickable(
+                EFacturaSelectors.POPUP_CLOSE_BUTTON.value, timeout=timeout
+            )
+
+            if close_button:
+                self.logger.info("Popup found - closing it")
+                close_button.click()
+                self.logger.info("Popup closed successfully")
+            else:
+                self.logger.info("No popup found")
+
+        except Exception as e:
+            self.logger.debug(f"No popup found or could not close: {str(e)}")
+            # Continue execution even if popup not found
+            pass

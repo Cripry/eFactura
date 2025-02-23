@@ -24,24 +24,18 @@ class SupplierRoleEfactura(EfacturaWebPage):
         """Supplier-specific actions"""
         raise NotImplementedError
 
-    def sign_all_invoices(self) -> bool:
+    def sign_all_invoices(self) -> None:
         """Sign all invoices created by supplier"""
         self.logger.info("Starting to sign all invoices")
 
-        try:
-            # 1. Navigate to new invoices page
-            self._navigate_to_new_invoices()
+        # 1. Navigate to new invoices page
+        self._navigate_to_new_invoices()
 
-            # 2. Select all invoices
-            if not self._select_all_invoices():
-                return False
+        # 2. Select all invoices
+        self._select_all_invoices()
 
-            # 3. Complete signing process
-            return self._complete_signing_process()
-
-        except Exception as e:
-            self.logger.error(f"Failed to sign all invoices: {str(e)}")
-            return False
+        # 3. Complete signing process
+        return self._complete_signing_process()
 
     def _navigate_to_new_invoices(self) -> None:
         """Navigate to new invoices page"""

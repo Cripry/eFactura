@@ -1,57 +1,113 @@
-from typing import List
-from domain.models import CompanyTasks, Task, TaskResult, TaskStatus
-from domain.exceptions import USBNotFoundException
 import logging
+from typing import List
+from machine.domain.models import TaskStatus
+from machine.domain.exceptions import USBNotFoundException
+from machine.domain.schemas import TaskStatusUpdate
+from machine.domain.models.dataclass.dataclass import Worker
+from machine.domain.services.buyer_role_efactura import BuyerRoleEfactura
+from machine.domain.services.supplier_role_efactura import SupplierRoleEfactura
 
 
 class TaskExecutor:
-    def __init__(self):
+    def __init__(self, web_handler, desktop_handler):
+        self.web_handler = web_handler
+        self.desktop_handler = desktop_handler
         self.logger = logging.getLogger(__name__)
 
-    def execute_tasks(self, company_tasks: List[CompanyTasks]) -> List[TaskResult]:
-        self.logger.info(f"Executing {len(company_tasks)} company tasks")
+    def execute_single_invoice_tasks(
+        self, worker: Worker, tasks: List[dict]
+    ) -> List[TaskStatusUpdate]:
+        """Execute single invoice tasks for a specific company"""
+        self.logger.info(f"Processing {len(tasks)} tasks for company {worker.idno}")
         results = []
-        for ct in company_tasks:
-            self.logger.debug(f"Processing tasks for company {ct.idno}")
-            for task in ct.tasks:
+
+        try:
+            # Create service with provided worker
+            buyer_service = BuyerRoleEfactura(
+                worker, self.web_handler, self.desktop_handler
+            )
+
+            # Process each task
+            for task in tasks:
                 try:
-                    self.logger.debug(f"Executing task: {task}")
-                    self._execute_single_task(ct.idno, task)
+                    self.logger.info(f"Processing task: {task}")
+                    buyer_service.sign_invoice(task["seria"], task["number"])
+
                     results.append(
-                        TaskResult(
-                            idno=ct.idno,
-                            seria=task.seria,
-                            number=task.number,
-                            status=TaskStatus.COMPLETED,
+                        TaskStatusUpdate(
+                            task_uuid=task["task_uuid"], status=TaskStatus.COMPLETED
                         )
                     )
-                    self.logger.debug("Task completed successfully")
-                except USBNotFoundException as e:
+
+                except USBNotFoundException:
                     self.logger.warning(f"USB not found for task: {task}")
                     results.append(
-                        TaskResult(
-                            idno=ct.idno,
-                            seria=task.seria,
-                            number=task.number,
-                            status=TaskStatus.USB_NOT_FOUND,
-                            error=str(e),
+                        TaskStatusUpdate(
+                            task_uuid=task["task_uuid"], status=TaskStatus.USB_NOT_FOUND
                         )
                     )
-                except Exception as e:
-                    self.logger.error(f"Error executing task: {task}", exc_info=True)
+                except Exception:
+                    self.logger.error(f"Failed to process task: {task}", exc_info=True)
                     results.append(
-                        TaskResult(
-                            idno=ct.idno,
-                            seria=task.seria,
-                            number=task.number,
-                            status=TaskStatus.FAILED,
-                            error=str(e),
+                        TaskStatusUpdate(
+                            task_uuid=task["task_uuid"], status=TaskStatus.FAILED
                         )
                     )
-        self.logger.info(f"Completed execution of {len(results)} tasks")
+
+        except Exception:
+            self.logger.error(
+                f"Failed to process tasks for company {worker.idno}", exc_info=True
+            )
+            # Add FAILED status for all remaining tasks
+            for task in tasks:
+                if not any(r.task_uuid == task["task_uuid"] for r in results):
+                    results.append(
+                        TaskStatusUpdate(
+                            task_uuid=task["task_uuid"], status=TaskStatus.FAILED
+                        )
+                    )
+
         return results
 
-    def _execute_single_task(self, idno: str, task: Task):
-        self.logger.debug(f"Executing single task for company {idno}: {task}")
-        # Placeholder for actual task execution
-        return True
+    def execute_multiple_invoice_tasks(
+        self, worker: Worker, task: dict
+    ) -> TaskStatusUpdate:
+        """Execute multiple invoice task for a specific company"""
+        self.logger.info(f"Processing multiple invoice task for company {worker.idno}")
+
+        try:
+            action_type = task["action_type"]
+            task_uuid = task["task_uuid"]
+
+            if action_type == "SupplierSignAllDraftedInvoices":
+                # Create supplier service
+                supplier_service = SupplierRoleEfactura(
+                    worker, self.web_handler, self.desktop_handler
+                )
+
+                try:
+                    # Execute signing
+                    supplier_service.sign_all_invoices()
+                    return TaskStatusUpdate(
+                        task_uuid=task_uuid, status=TaskStatus.COMPLETED
+                    )
+                except Exception as e:
+                    self.logger.error(
+                        f"Failed to sign all invoices for company {worker.idno}: {str(e)}",
+                        exc_info=True,
+                    )
+                    return TaskStatusUpdate(
+                        task_uuid=task_uuid, status=TaskStatus.FAILED
+                    )
+            else:
+                self.logger.warning(f"Unknown action type: {action_type}")
+                return TaskStatusUpdate(task_uuid=task_uuid, status=TaskStatus.FAILED)
+
+        except Exception as e:
+            self.logger.error(
+                f"Failed to process task for company {worker.idno}: {str(e)}",
+                exc_info=True,
+            )
+            return TaskStatusUpdate(
+                task_uuid=task["task_uuid"], status=TaskStatus.FAILED
+            )

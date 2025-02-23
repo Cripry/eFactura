@@ -52,3 +52,6 @@ invoice_signer/
 # Test results
 test-results/
 coverage.xml
+
+
+.log

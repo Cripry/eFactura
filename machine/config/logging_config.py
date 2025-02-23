@@ -1,13 +1,13 @@
 import logging
-import os
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 
 def setup_logging():
     """Configure logging for the application"""
     # Create logs directory if it doesn't exist
-    logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
-    os.makedirs(logs_dir, exist_ok=True)
+    logs_dir = Path(__file__).parent.parent / "logs"
+    logs_dir.mkdir(exist_ok=True)
 
     # Main logger configuration
     logger = logging.getLogger()
@@ -23,7 +23,7 @@ def setup_logging():
 
     # File handler
     file_handler = RotatingFileHandler(
-        os.path.join(logs_dir, "machine.log"),
+        logs_dir / "machine.log",
         maxBytes=1024 * 1024 * 5,  # 5MB
         backupCount=5,
     )

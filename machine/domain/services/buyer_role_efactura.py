@@ -40,6 +40,8 @@ class BuyerRoleEfactura(EfacturaWebPage):
         self.web_handler.navigate_to_url(
             f"{self.web_handler.efactura_base_url}{BuyerUrls.INVOICES_TO_SIGN.value}"
         )
+        # Close any popups that might appear after navigation
+        self.close_popup_if_exists()
 
     def _find_and_select_invoice(self, seria: str, number: str) -> bool:
         """Find and select invoice by seria and number"""

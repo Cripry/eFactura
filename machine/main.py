@@ -1,17 +1,13 @@
-import logging
-from application.machine_handler import MachineHandler
-
-
-def setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+from machine.application.machine_handler import MachineHandler
+from machine.config.logging_config import setup_logging
 
 
 def main():
+    # Setup logging
     setup_logging()
-    handler = MachineHandler()
+
+    # Create and run handler
+    handler = MachineHandler(environment="TEST")
     handler.run()
 
 
