@@ -43,8 +43,6 @@ venv.bak/
 *.sqlite
 
 # Alembic
-server/alembic.ini
-server/alembic/versions/*.py
 !server/alembic/versions/__init__.py
 allure_results
 invoice_signer/

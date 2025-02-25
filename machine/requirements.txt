@@ -11,6 +11,10 @@ isort>=5.13.2
 flake8>=7.0.0
 pytest>=7.4.4
 pytest-cov>=4.1.0
+pydantic_settings
+pyautogui
+pywinauto
+opencv-python
 
 # Logging and utilities
 python-json-logger>=2.0.7 
