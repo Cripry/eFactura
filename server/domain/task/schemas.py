@@ -1,6 +1,6 @@
 import datetime
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from enum import Enum
 from uuid import UUID
 from pydantic import validator
@@ -39,14 +39,26 @@ class MultipleInvoicesIdentifier(BaseModel):
     idno: str = Field(..., min_length=1, max_length=20)
 
 
+class SingleInvoiceData(BaseModel):
+    idno: str
+    person_name: str
+    seria: str
+    number: str
+
+
 class SingleInvoiceTaskRequest(BaseModel):
-    action_type: SingleInvoiceAction
-    invoices: List[SingleInvoiceIdentifier]
+    action_type: str
+    invoices: List[SingleInvoiceData]
+
+
+class MultipleInvoicesData(BaseModel):
+    idno: str
+    person_name: str
 
 
 class MultipleInvoicesTaskRequest(BaseModel):
-    action_type: MultipleInvoicesAction
-    invoices: List[MultipleInvoicesIdentifier]
+    action_type: str
+    invoices: List[MultipleInvoicesData]
 
 
 class SingleInvoiceStatusRequest(BaseModel):
@@ -101,3 +113,26 @@ class CompanyTask(BaseModel):
     status: TaskStatus
     created_at: datetime.datetime
     task_type: TaskType
+
+
+class TaskResponse(BaseModel):
+    task_uuid: UUID
+    status: str
+
+
+class SingleInvoiceTaskDetail(BaseModel):
+    seria: str
+    number: str
+    task_uuid: UUID
+    action_type: str
+
+
+class MultipleInvoicesTaskDetail(BaseModel):
+    idno: str
+    task_uuid: UUID
+    action_type: str
+
+
+class MachineTasksResponse(BaseModel):
+    SingleInvoiceTask: Dict[str, Dict[str, List[SingleInvoiceTaskDetail]]]
+    MultipleInvoicesTask: List[MultipleInvoicesTaskDetail]

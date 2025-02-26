@@ -429,3 +429,37 @@ class SQLAlchemyTaskRepository(TaskRepository):
         except Exception as e:
             self.session.rollback()
             raise DatabaseException("Failed to get waiting tasks", str(e))
+
+    def create_single_invoice_task(self, company_uuid: UUID, task_data: dict) -> None:
+        try:
+            task = SingleInvoiceTaskDataModel(
+                task_uuid=uuid.uuid4(),
+                company_uuid=company_uuid,
+                idno=task_data["idno"],
+                person_name=task_data["person_name"],
+                seria=task_data["seria"],
+                number=task_data["number"],
+                action_type=task_data["action_type"],
+                status="WAITING"
+            )
+            self.session.add(task)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise DatabaseException(f"Error creating task: {str(e)}", str(e))
+
+    def create_multiple_invoices_task(self, company_uuid: UUID, task_data: dict) -> None:
+        try:
+            task = MultipleInvoicesTaskDataModel(
+                task_uuid=uuid.uuid4(),
+                company_uuid=company_uuid,
+                idno=task_data["idno"],
+                person_name=task_data["person_name"],
+                action_type=task_data["action_type"],
+                status="WAITING"
+            )
+            self.session.add(task)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise DatabaseException(f"Error creating task: {str(e)}", str(e))

@@ -13,6 +13,7 @@ class SingleInvoiceTaskDataModel(Base):
 
     task_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     idno = Column(String(50), nullable=False)
+    person_name = Column(String(50), nullable=False)
     seria = Column(String(50), nullable=False)
     number = Column(Integer, nullable=False)
     action_type = Column(String(50), nullable=False)
@@ -24,6 +25,7 @@ class MultipleInvoicesTaskDataModel(Base):
 
     task_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     idno = Column(String(50), nullable=False)
+    person_name = Column(String(50), nullable=False)
     action_type = Column(String(50), nullable=False)
 
 

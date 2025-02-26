@@ -258,60 +258,42 @@ class TaskService:
         except DatabaseException as e:
             raise DatabaseException("Failed to get waiting tasks", str(e))
 
-    def get_structured_waiting_tasks_for_machine(
-        self, current_company: Company
-    ) -> dict:
-        """
-        Get all waiting tasks organized by type for the machine.
-
-        Args:
-            current_company: Company entity making the request
-
-        Returns:
-            dict: Tasks structured by type:
-                - SingleInvoiceTask: Grouped by IDNO
-                - MultipleInvoicesTask: List of tasks
-
-        Raises:
-            DatabaseException: If there's an error retrieving from the database
-        """
+    def get_structured_waiting_tasks_for_machine(self, company: Company) -> dict:
+        """Get waiting tasks structured by person and IDNO"""
         try:
-            # Get tasks from both sources
-            single_invoice_tasks = self.get_waiting_tasks_for_machine_single_invoice(
-                current_company
-            )
-            multiple_invoices_tasks = (
-                self.get_waiting_tasks_for_machine_multiple_invoices(current_company)
-            )
+            # Get all waiting tasks
+            single_tasks = self.task_repository.get_single_invoice_waiting_tasks(company)
+            multiple_tasks = self.task_repository.get_multiple_invoices_waiting_tasks(company)
 
-            # Group single invoice tasks by IDNO
-            single_invoice_grouped = {}
-            for task in single_invoice_tasks:
-                if task.idno not in single_invoice_grouped:
-                    single_invoice_grouped[task.idno] = []
-                single_invoice_grouped[task.idno].append(
-                    {
-                        "seria": task.seria,
-                        "number": task.number,
-                        "task_uuid": task.task_uuid,
-                        "action_type": task.action_type,
-                    }
-                )
+            # Structure single tasks by person_name and idno
+            single_tasks_structured = {}
+            for task in single_tasks:
+                if task.person_name not in single_tasks_structured:
+                    single_tasks_structured[task.person_name] = {}
+                
+                if task.idno not in single_tasks_structured[task.person_name]:
+                    single_tasks_structured[task.person_name][task.idno] = []
+                
+                single_tasks_structured[task.person_name][task.idno].append({
+                    "seria": task.seria,
+                    "number": task.number,
+                    "task_uuid": task.task_uuid,
+                    "action_type": task.action_type
+                })
 
-            # Structure the final response
-            result = {
-                TaskType.SINGLE_INVOICE_TASK.value: single_invoice_grouped,
-                TaskType.MULTIPLE_INVOICES_TASK.value: [
-                    {
-                        "idno": task.idno,
-                        "task_uuid": task.task_uuid,
-                        "action_type": task.action_type,
-                    }
-                    for task in multiple_invoices_tasks
-                ],
+            # Structure multiple tasks
+            multiple_tasks_structured = [
+                {
+                    "idno": task.idno,
+                    "task_uuid": task.task_uuid,
+                    "action_type": task.action_type
+                }
+                for task in multiple_tasks
+            ]
+
+            return {
+                "SingleInvoiceTask": single_tasks_structured,
+                "MultipleInvoicesTask": multiple_tasks_structured
             }
-
-            return result
-
-        except DatabaseException as e:
-            raise DatabaseException("Failed to get structured waiting tasks", str(e))
+        except Exception as e:
+            raise DatabaseException(f"Error getting tasks: {str(e)}", str(e))

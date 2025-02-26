@@ -34,6 +34,7 @@ def upgrade():
         "single_invoice_task_data",
         sa.Column("task_uuid", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("idno", sa.String(50), nullable=False),
+        sa.Column("person_name", sa.String(50), nullable=False),
         sa.Column("seria", sa.String(50), nullable=False),
         sa.Column("number", sa.Integer(), nullable=False),
         sa.Column("action_type", sa.String(50), nullable=False),
@@ -63,6 +64,7 @@ def upgrade():
         "multiple_invoices_task_data",
         sa.Column("task_uuid", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("idno", sa.String(50), nullable=False),
+        sa.Column("person_name", sa.String(50), nullable=False),
         sa.Column("action_type", sa.String(50), nullable=False),
     )
 

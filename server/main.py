@@ -152,6 +152,7 @@ def create_single_invoice_task(
         "invoices": [
             {
                 "idno": "1234567890123",
+                "person_name": "Person_Name",
                 "seria": "AA",
                 "number": 123
             }
@@ -175,6 +176,7 @@ def create_single_invoice_task(
         "existing_tasks": [
             {
                 "idno": "1234567890123",
+                "person_name": "Person_Name",
                 "seria": "AA",
                 "number": 123
             }
@@ -226,7 +228,8 @@ def create_multiple_invoices_task(
         "action_type": "SupplierSignAllDraftedInvoices",
         "invoices": [
             {
-                "idno": "1234567890123"
+                "idno": "1234567890123",
+                "person_name": "Person_Name"
             }
         ]
     }
@@ -384,42 +387,32 @@ def get_structured_waiting_tasks_for_machine(
     db: Session = Depends(get_db),
 ):
     """
-    Get all waiting tasks structured by type for the machine.
+    Get all waiting tasks structured by person name and IDNO for the machine.
 
     Returns:
     ```json
     {
         "SingleInvoiceTask": {
-            "1234567890123": [
-                {
-                    "seria": "AA",
-                    "number": "123",
-                    "task_uuid": "550e8400-e29b-41d4-a716-446655440000",
-                    "action_type": "BuyerSignInvoice"
-                }
-            ],
-            "9876543210987": [
-                {
-                    "seria": "BB",
-                    "number": "456",
-                    "task_uuid": "550e8400-e29b-41d4-a716-446655440001",
-                    "action_type": "BuyerSignInvoice"
-                }
-            ]
+            "Person_Name": {
+                "IDNO1": [
+                    {
+                        "seria": "AA",
+                        "number": "123",
+                        "task_uuid": "uuid",
+                        "action_type": "BuyerSignInvoice"
+                    }
+                ]
+            }
         },
         "MultipleInvoicesTask": [
             {
-                "idno": "1234567890123",
-                "task_uuid": "550e8400-e29b-41d4-a716-446655440002",
+                "idno": "IDNO1",
+                "task_uuid": "uuid",
                 "action_type": "SupplierSignAllDraftedInvoices"
             }
         ]
     }
     ```
-
-    The response is structured as:
-    - SingleInvoiceTask: Grouped by IDNO, contains individual invoice tasks
-    - MultipleInvoicesTask: List of tasks for signing multiple invoices
     """
     try:
         task_repository = SQLAlchemyTaskRepository(db)
