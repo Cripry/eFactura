@@ -38,12 +38,14 @@ class TaskService:
                 single_invoice_task.idno,
                 single_invoice_task.seria,
                 single_invoice_task.number,
+                single_invoice_task.person_name,
             ):
                 existing_tasks.append(
                     {
                         "idno": single_invoice_task.idno,
                         "seria": single_invoice_task.seria,
                         "number": single_invoice_task.number,
+                        "person_name": single_invoice_task.person_name,
                     }
                 )
         return existing_tasks
@@ -61,9 +63,10 @@ class TaskService:
                     task.idno,
                     task.seria,
                     task.number,
+                    task.person_name,
                 )
             else:
-                task_key = task.idno
+                task_key = (task.idno, task.person_name)
 
             if task_key in seen:
                 duplicates.append(task_key)
@@ -91,16 +94,16 @@ class TaskService:
             DatabaseException: If there's an error saving to the database
         """
         # 1. Check if the task already exists
-        existing_tasks = self._get_existing_single_invoice_tasks(invoices)
-        if existing_tasks:
-            raise TaskExistsException(
-                "Tasks already exist in database", existing_tasks=existing_tasks
-            )
+        # existing_tasks = self._get_existing_single_invoice_tasks(invoices)
+        # if existing_tasks:
+        #     raise TaskExistsException(
+        #         "Tasks already exist in database", existing_tasks=existing_tasks
+        #     )
 
         # 2. Check for duplicates
-        duplicates = self._check_for_duplicates(invoices)
-        if duplicates:
-            raise DuplicateTaskException("Duplicates found", duplicates=duplicates)
+        # duplicates = self._check_for_duplicates(invoices)
+        # if duplicates:
+        #     raise DuplicateTaskException("Duplicates found", duplicates=duplicates)
 
         for invoice in invoices:
             # 3. Create the single invoice entry
@@ -262,38 +265,49 @@ class TaskService:
         """Get waiting tasks structured by person and IDNO"""
         try:
             # Get all waiting tasks
-            single_tasks = self.task_repository.get_single_invoice_waiting_tasks(company)
-            multiple_tasks = self.task_repository.get_multiple_invoices_waiting_tasks(company)
+            single_tasks = (
+                self.task_repository.get_waiting_tasks_for_machine_single_invoice(
+                    company.company_uuid
+                )
+            )
+            multiple_tasks = (
+                self.task_repository.get_waiting_tasks_for_machine_multiple_invoices(
+                    company.company_uuid
+                )
+            )
 
             # Structure single tasks by person_name and idno
             single_tasks_structured = {}
             for task in single_tasks:
                 if task.person_name not in single_tasks_structured:
                     single_tasks_structured[task.person_name] = {}
-                
+
                 if task.idno not in single_tasks_structured[task.person_name]:
                     single_tasks_structured[task.person_name][task.idno] = []
-                
-                single_tasks_structured[task.person_name][task.idno].append({
-                    "seria": task.seria,
-                    "number": task.number,
-                    "task_uuid": task.task_uuid,
-                    "action_type": task.action_type
-                })
+
+                single_tasks_structured[task.person_name][task.idno].append(
+                    {
+                        "seria": task.seria,
+                        "number": task.number,
+                        "task_uuid": task.task_uuid,
+                        "action_type": task.action_type,
+                    }
+                )
 
             # Structure multiple tasks
             multiple_tasks_structured = [
                 {
                     "idno": task.idno,
+                    "person_name": task.person_name,
                     "task_uuid": task.task_uuid,
-                    "action_type": task.action_type
+                    "action_type": task.action_type,
                 }
                 for task in multiple_tasks
             ]
 
             return {
                 "SingleInvoiceTask": single_tasks_structured,
-                "MultipleInvoicesTask": multiple_tasks_structured
+                "MultipleInvoicesTask": multiple_tasks_structured,
             }
         except Exception as e:
             raise DatabaseException(f"Error getting tasks: {str(e)}", str(e))

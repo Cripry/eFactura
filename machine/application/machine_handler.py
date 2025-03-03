@@ -22,45 +22,46 @@ class MachineHandler:
     def process_single_invoice_tasks(self, tasks_by_company) -> list[TaskStatusUpdate]:
         """Process single invoice tasks for each company"""
         all_results = []
-
-        for idno, tasks in tasks_by_company.items():
-            try:
-                # Initialize new driver and handlers for each company
-                driver = self.driver_manager.get_driver()
-                web_handler = SeleniumLoginHandler(driver, self.environment)
-                desktop_handler = MSignDesktopHandler()
-
-                # Initialize services
-                login_service = LoginService(web_handler, desktop_handler)
-                task_executor = TaskExecutor(web_handler, desktop_handler)
-
+        
+        for certificate_name, company_tasks in tasks_by_company.items():
+            for idno, invoice_tasks in company_tasks.items():
                 try:
-                    # Get PIN and create worker
-                    pin = USB_PIN.get_pin(idno)
-                    worker = Worker(idno=idno, pin=pin)
+                    # Initialize new driver and handlers for each company
+                    driver = self.driver_manager.get_driver()
+                    web_handler = SeleniumLoginHandler(driver, self.environment)
+                    desktop_handler = MSignDesktopHandler()
 
-                    # Login worker
-                    login_service.login_worker(worker)
+                    # Initialize services
+                    login_service = LoginService(web_handler, desktop_handler)
+                    task_executor = TaskExecutor(web_handler, desktop_handler)
 
-                    # Execute tasks with worker instance
-                    results = task_executor.execute_single_invoice_tasks(worker, tasks)
-                    all_results.extend(results)
+                    try:
+                        # Get PIN and create worker
+                        pin = USB_PIN.get_pin(idno)
+                        worker = Worker(idno=idno, pin=pin, person_name=certificate_name)
 
-                finally:
-                    # Always close the driver
-                    self.driver_manager.close_driver(driver)
+                        # Login worker
+                        login_service.login_worker(worker)
 
-            except Exception:
-                self.logger.error(
-                    f"Failed to process tasks for company {idno}", exc_info=True
-                )
-                # Add failed status for all tasks of this company
-                for task in tasks:
-                    all_results.append(
-                        TaskStatusUpdate(
-                            task_uuid=task["task_uuid"], status=TaskStatus.FAILED
-                        )
+                        # Execute tasks with worker instance
+                        results = task_executor.execute_single_invoice_tasks(worker, invoice_tasks)
+                        all_results.extend(results)
+
+                    finally:
+                        # Always close the driver
+                        self.driver_manager.close_driver(driver)
+
+                except Exception:
+                    self.logger.error(
+                        f"Failed to process tasks for company {idno}", exc_info=True
                     )
+                    # Add failed status for all tasks of this company
+                    for task in tasks:
+                        all_results.append(
+                            TaskStatusUpdate(
+                                task_uuid=task["task_uuid"], status=TaskStatus.FAILED
+                            )
+                        )
 
         return all_results
 

@@ -31,12 +31,14 @@ class TaskStatus(str, Enum):
 
 class SingleInvoiceIdentifier(BaseModel):
     idno: str = Field(..., min_length=1, max_length=20)
+    person_name: str = Field(..., min_length=1, max_length=20)
     seria: Optional[str] = Field(None, min_length=1, max_length=10)
     number: int
 
 
 class MultipleInvoicesIdentifier(BaseModel):
     idno: str = Field(..., min_length=1, max_length=20)
+    person_name: str = Field(..., min_length=1, max_length=20)
 
 
 class SingleInvoiceData(BaseModel):
@@ -96,6 +98,7 @@ class TaskStatusResponse(BaseModel):
 class SingleInvoiceResponse(BaseModel):
     idno: str
     seria: str
+    person_name: str
     number: str
     task_uuid: str
     action_type: SingleInvoiceAction

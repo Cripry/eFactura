@@ -10,6 +10,27 @@ import logging
 import time
 
 
+def is_name_contained(search_term: str, text: str) -> bool:
+    """
+    Check if all parts of the search_term (first, middle, last names) are contained in the text.
+
+    :param search_term: The name to search for (can be in any order or case)
+    :param text: The text in which to search
+    :return: True if all parts of the name are found in the text, False otherwise
+    """
+    search_term = search_term.upper().strip()  # Normalize search term
+    text = text.upper().strip()  # Normalize text
+
+    name_parts = search_term.split()  # Split search term into parts
+
+    # Check if all parts of the name exist in the text
+    for part in name_parts:
+        if part not in text:
+            return False
+
+    return True  # All parts were found in the text
+
+
 class MSignWebPage:
     """Service for handling MSign web page interactions"""
 
@@ -34,19 +55,19 @@ class MSignWebPage:
         usb_option = auth_blocks[1]
         self._scroll_and_click(usb_option)
 
-    def _find_certificate_card(self, idno: str) -> WebElement:
+    def _find_certificate_card(self, person_name: str) -> WebElement:
         """Find certificate card by idno"""
-        self.logger.info(f"Looking for certificate card with idno: {idno}")
+        self.logger.info(f"Looking for certificate card with idno: {person_name}")
         certificate_cards = self.web_handler.wait.wait_for_web_elements(
             MSignSelectors.CERTIFICATE_CARDS.value
         )
 
         for card in certificate_cards:
-            if idno in card.text:
-                self.logger.info(f"Found certificate card with idno {idno}")
+            if is_name_contained(person_name, card.text):
+                self.logger.info(f"Found certificate card with idno {person_name}")
                 return card
 
-        raise Exception(f"Certificate card with idno {idno} not found")
+        raise Exception(f"Certificate card with idno {person_name} not found")
 
     def _click_sign_button(self, card: WebElement) -> None:
         """Click sign button within a certificate card"""
@@ -62,7 +83,7 @@ class MSignWebPage:
         time.sleep(0.5)
         element.click()
 
-    def complete_signing(self, idno: str, pin: str) -> bool:
+    def complete_signing(self, person_name: str, pin: str) -> bool:
         """Complete the signing process on MSign website"""
         self.logger.info("Starting MSign signing process")
         try:
@@ -76,7 +97,7 @@ class MSignWebPage:
             self._select_usb_sign_option()
 
             # 2. Find and select certificate
-            certificate_card = self._find_certificate_card(idno)
+            certificate_card = self._find_certificate_card(person_name)
 
             # 3. Initiate signing
             self._click_sign_button(certificate_card)

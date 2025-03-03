@@ -8,6 +8,7 @@ from domain.task.schemas import (
     MultipleInvoicesResponse,
     SingleInvoiceIdentifier,
     SingleInvoiceAction,
+    SingleInvoiceResponse,
     SingleInvoiceStatusRequest,
     TaskStatus,
     TaskStatusResponse,
@@ -49,7 +50,9 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    def get_waiting_tasks_for_machine_single_invoice(self, company_uuid: uuid.UUID):
+    def get_waiting_tasks_for_machine_single_invoice(
+        self, company_uuid: uuid.UUID
+    ) -> List[SingleInvoiceResponse]:
         pass
 
     @abstractmethod
@@ -77,3 +80,4 @@ class TaskRepository(ABC):
         self, tasks: List[SingleInvoiceStatusRequest]
     ) -> List[uuid.UUID]:
         pass
+

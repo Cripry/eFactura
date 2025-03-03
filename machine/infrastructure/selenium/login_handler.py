@@ -27,6 +27,27 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 
 
+def is_name_contained(search_term: str, text: str) -> bool:
+    """
+    Check if all parts of the search_term (first, middle, last names) are contained in the text.
+
+    :param search_term: The name to search for (can be in any order or case)
+    :param text: The text in which to search
+    :return: True if all parts of the name are found in the text, False otherwise
+    """
+    search_term = search_term.upper().strip()  # Normalize search term
+    text = text.upper().strip()  # Normalize text
+
+    name_parts = search_term.split()  # Split search term into parts
+
+    # Check if all parts of the name exist in the text
+    for part in name_parts:
+        if part not in text:
+            return False
+
+    return True  # All parts were found in the text
+
+
 class SeleniumLoginHandler:
     def __init__(self, driver: WebDriver, environment: str):
         self.driver = driver
@@ -58,8 +79,8 @@ class SeleniumLoginHandler:
         element = self.driver.find_element(*LoginPageSelectors.LOGIN_MSIGN_BUTTON.value)
         element.click()
 
-    def select_certificate(self, idno: str) -> bool:
-        self.logger.info(f"Selecting certificate for idno: {idno}")
+    def select_certificate(self, person_name: str) -> bool:
+        self.logger.info(f"Selecting certificate for person_name: {person_name}")
 
         try:
             # Wait for certificate page to load
@@ -76,12 +97,12 @@ class SeleniumLoginHandler:
             certificates = container.find_elements(By.TAG_NAME, "button")
 
             for cert in certificates:
-                if idno in cert.text:
+                if is_name_contained(person_name, cert.text):
                     self.logger.debug(f"Found matching certificate: {cert.text}")
                     cert.click()
                     return True
 
-            raise CertificateNotFoundException(idno)
+            raise CertificateNotFoundException(person_name)
         except Exception as e:
             self.logger.error(f"Certificate selection failed: {str(e)}")
             raise
@@ -97,10 +118,10 @@ class SeleniumLoginHandler:
             self.click_usb_sign_option()
 
             # Select certificate
-            self.select_certificate(worker.idno)
+            self.select_certificate(worker.person_name)
 
             self.logger.info("Web authentication and certificate selection completed")
-            return Session(idno=worker.idno)
+            return Session(idno=worker.idno, person_name=worker.person_name)
         except Exception as e:
             self.logger.error(f"Web authentication failed: {str(e)}")
             raise Exception(f"Web authentication failed: {str(e)}")

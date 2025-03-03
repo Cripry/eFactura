@@ -118,6 +118,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             task = SingleInvoiceTaskDataModel(
                 task_uuid=uuid.uuid4(),
                 idno=invoice.idno,
+                person_name=invoice.person_name,
                 seria=invoice.seria,
                 number=invoice.number,
                 action_type=action_type,
@@ -143,6 +144,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             task = MultipleInvoicesTaskDataModel(
                 task_uuid=uuid.uuid4(),
                 idno=invoice.idno,
+                person_name=invoice.person_name,
                 action_type=action_type,
             )
             self.session.add(task)
@@ -238,6 +240,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                     SingleInvoiceTaskDataModel.idno,
                     SingleInvoiceTaskDataModel.seria,
                     SingleInvoiceTaskDataModel.number,
+                    SingleInvoiceTaskDataModel.person_name,
                     CompanyTaskModel.task_uuid,
                     SingleInvoiceTaskDataModel.action_type,
                 )
@@ -257,6 +260,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 SingleInvoiceResponse(
                     idno=task.idno,
                     seria=task.seria,
+                    person_name=task.person_name,
                     number=task.number,
                     task_uuid=str(task.task_uuid),
                     action_type=task.action_type,
@@ -276,6 +280,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             waiting_tasks = (
                 self.session.query(
                     MultipleInvoicesTaskDataModel.idno,
+                    MultipleInvoicesTaskDataModel.person_name,
                     CompanyTaskModel.task_uuid,
                     MultipleInvoicesTaskDataModel.action_type,
                 )
@@ -305,7 +310,9 @@ class SQLAlchemyTaskRepository(TaskRepository):
             self.session.rollback()
             raise DatabaseException("Failed to get waiting tasks", str(e))
 
-    def single_invoice_entry_exists(self, idno: str, seria: str, number: int) -> bool:
+    def single_invoice_entry_exists(
+        self, idno: str, seria: str, number: int, person_name: str
+    ) -> bool:
         try:
             task = (
                 self.session.query(SingleInvoiceTaskDataModel)
@@ -313,6 +320,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                     SingleInvoiceTaskDataModel.idno == idno,
                     SingleInvoiceTaskDataModel.seria == seria,
                     SingleInvoiceTaskDataModel.number == number,
+                    SingleInvoiceTaskDataModel.person_name == person_name,
                 )
                 .first()
             )
@@ -380,56 +388,6 @@ class SQLAlchemyTaskRepository(TaskRepository):
             self.session.rollback()
             raise DatabaseException("Failed to get tasks uuid", str(e))
 
-    def get_structured_waiting_tasks_for_machine(self, company_uuid: UUID) -> dict:
-        """
-        Get all waiting tasks for a company, structured by type.
-
-        Args:
-            company_uuid: UUID of the company
-
-        Returns:
-            dict: Tasks organized by type and IDNO
-
-        Raises:
-            DatabaseException: If there's an error retrieving from the database
-        """
-        try:
-            # Single query joining CompanyTaskModel with SingleInvoiceTaskDataModel
-            waiting_tasks = (
-                self.session.query(
-                    SingleInvoiceTaskDataModel.idno,
-                    SingleInvoiceTaskDataModel.seria,
-                    SingleInvoiceTaskDataModel.number,
-                    CompanyTaskModel.task_uuid,
-                    SingleInvoiceTaskDataModel.action_type,
-                )
-                .join(
-                    CompanyTaskModel,
-                    CompanyTaskModel.task_uuid == SingleInvoiceTaskDataModel.task_uuid,
-                )
-                .filter(
-                    CompanyTaskModel.company_uuid == company_uuid,
-                    CompanyTaskModel.status == TaskStatus.WAITING.value,
-                    CompanyTaskModel.task_type == TaskType.SINGLE_INVOICE_TASK.value,
-                )
-                .all()
-            )
-
-            return {
-                task.idno: SingleInvoiceResponse(
-                    idno=task.idno,
-                    seria=task.seria,
-                    number=task.number,
-                    task_uuid=str(task.task_uuid),
-                    action_type=task.action_type,
-                )
-                for task in waiting_tasks
-            }
-
-        except Exception as e:
-            self.session.rollback()
-            raise DatabaseException("Failed to get waiting tasks", str(e))
-
     def create_single_invoice_task(self, company_uuid: UUID, task_data: dict) -> None:
         try:
             task = SingleInvoiceTaskDataModel(
@@ -440,7 +398,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 seria=task_data["seria"],
                 number=task_data["number"],
                 action_type=task_data["action_type"],
-                status="WAITING"
+                status="WAITING",
             )
             self.session.add(task)
             self.session.commit()
@@ -448,7 +406,9 @@ class SQLAlchemyTaskRepository(TaskRepository):
             self.session.rollback()
             raise DatabaseException(f"Error creating task: {str(e)}", str(e))
 
-    def create_multiple_invoices_task(self, company_uuid: UUID, task_data: dict) -> None:
+    def create_multiple_invoices_task(
+        self, company_uuid: UUID, task_data: dict
+    ) -> None:
         try:
             task = MultipleInvoicesTaskDataModel(
                 task_uuid=uuid.uuid4(),
@@ -456,7 +416,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 idno=task_data["idno"],
                 person_name=task_data["person_name"],
                 action_type=task_data["action_type"],
-                status="WAITING"
+                status="WAITING",
             )
             self.session.add(task)
             self.session.commit()

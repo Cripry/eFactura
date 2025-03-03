@@ -42,10 +42,11 @@ class CompanyTasks:
 @dataclass
 class Session:
     idno: str
-
+    person_name: str
 
 @dataclass
 class Worker:
     idno: str
     pin: str
+    person_name: str
     role: str = "Administrator"
