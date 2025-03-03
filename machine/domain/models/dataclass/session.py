@@ -3,4 +3,4 @@ from dataclasses import dataclass
 
 @dataclass
 class Session:
-    idno: str
+    my_company_idno: str

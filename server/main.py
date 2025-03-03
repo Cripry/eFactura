@@ -151,8 +151,8 @@ def create_single_invoice_task(
         "action_type": "BuyerSignInvoice",
         "invoices": [
             {
-                "idno": "1234567890123",
-                "person_name": "Person_Name",
+                "my_company_idno": "1234567890123",
+                "person_name_certificate": "Person_Name",
                 "seria": "AA",
                 "number": 123
             }
@@ -175,8 +175,8 @@ def create_single_invoice_task(
         "message": "Tasks already exist",
         "existing_tasks": [
             {
-                "idno": "1234567890123",
-                "person_name": "Person_Name",
+                "my_company_idno": "1234567890123",
+                "person_name_certificate": "Person_Name",
                 "seria": "AA",
                 "number": 123
             }
@@ -228,8 +228,14 @@ def create_multiple_invoices_task(
         "action_type": "SupplierSignAllDraftedInvoices",
         "invoices": [
             {
-                "idno": "1234567890123",
-                "person_name": "Person_Name"
+                "my_company_idno": "1234567890123",
+                "person_name_certificate": "Person_Name",
+                "companies_to_sign": [
+                    {
+                        "company_idno": "1234567890123",
+                        "signature_type": "LONG"
+                    }
+                ]
             }
         ]
     }
@@ -280,7 +286,7 @@ def get_single_invoice_tasks_status(
     ```json
     [
         {
-            "idno": "1234567890123",
+            "my_company_idno": "1234567890123",
             "seria": "AA",
             "number": "123"
         }
@@ -292,7 +298,7 @@ def get_single_invoice_tasks_status(
     {
         "tasks": [
             {
-                "idno": "1234567890123",
+                "my_company_idno": "1234567890123",
                 "seria": "AA",
                 "number": "123",
                 "status": "WAITING"
@@ -406,7 +412,7 @@ def get_structured_waiting_tasks_for_machine(
         },
         "MultipleInvoicesTask": [
             {
-                "idno": "IDNO1",
+                "my_company_idno": "IDNO1",
                 "task_uuid": "uuid",
                 "action_type": "SupplierSignAllDraftedInvoices"
             }

@@ -29,21 +29,28 @@ class TaskStatus(str, Enum):
     USB_NOT_FOUND = "USB_NOT_FOUND"
 
 
+class SignatureType(str, Enum):
+    LONG = "LONG"
+    SHORT = "SHORT"
+
+
 class SingleInvoiceIdentifier(BaseModel):
-    idno: str = Field(..., min_length=1, max_length=20)
-    person_name: str = Field(..., min_length=1, max_length=20)
+    my_company_idno: str = Field(..., min_length=1, max_length=20)
+    person_name_certificate: str = Field(..., min_length=1, max_length=20)
     seria: Optional[str] = Field(None, min_length=1, max_length=10)
     number: int
 
 
 class MultipleInvoicesIdentifier(BaseModel):
-    idno: str = Field(..., min_length=1, max_length=20)
-    person_name: str = Field(..., min_length=1, max_length=20)
+    my_company_idno: str = Field(..., min_length=1, max_length=20)
+    person_name_certificate: str = Field(..., min_length=1, max_length=20)
+    buyer_idno: str = Field(..., min_length=1, max_length=20)
+    signature_type: SignatureType
 
 
 class SingleInvoiceData(BaseModel):
-    idno: str
-    person_name: str
+    my_company_idno: str
+    person_name_certificate: str
     seria: str
     number: str
 
@@ -54,8 +61,10 @@ class SingleInvoiceTaskRequest(BaseModel):
 
 
 class MultipleInvoicesData(BaseModel):
-    idno: str
-    person_name: str
+    my_company_idno: str
+    person_name_certificate: str
+    buyer_idno: str
+    signature_type: SignatureType
 
 
 class MultipleInvoicesTaskRequest(BaseModel):
@@ -64,13 +73,13 @@ class MultipleInvoicesTaskRequest(BaseModel):
 
 
 class SingleInvoiceStatusRequest(BaseModel):
-    idno: str
+    my_company_idno: str
     seria: str
     number: str
 
 
 class MultipleInvoicesStatusRequest(BaseModel):
-    idno: str
+    my_company_idno: str
 
 
 class TaskStatusUpdateByUUIDRequest(BaseModel):
@@ -85,7 +94,7 @@ class TaskStatusUpdateByUUIDRequest(BaseModel):
 
 
 class TaskStatusItem(BaseModel):
-    idno: str
+    my_company_idno: str
     seria: str
     number: str
     status: str
@@ -96,16 +105,19 @@ class TaskStatusResponse(BaseModel):
 
 
 class SingleInvoiceResponse(BaseModel):
-    idno: str
+    my_company_idno: str
     seria: str
-    person_name: str
+    person_name_certificate: str
     number: str
     task_uuid: str
     action_type: SingleInvoiceAction
 
 
 class MultipleInvoicesResponse(BaseModel):
-    idno: str
+    my_company_idno: str
+    person_name_certificate: str
+    buyer_idno: str
+    signature_type: SignatureType
     task_uuid: str
     action_type: MultipleInvoicesAction
 
@@ -131,7 +143,8 @@ class SingleInvoiceTaskDetail(BaseModel):
 
 
 class MultipleInvoicesTaskDetail(BaseModel):
-    idno: str
+    buyer_idno: str
+    signature_type: SignatureType
     task_uuid: UUID
     action_type: str
 

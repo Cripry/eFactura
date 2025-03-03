@@ -14,7 +14,7 @@ class LoginService:
         self.logger = logging.getLogger(__name__)
 
     def login_worker(self, worker: Worker) -> Session:
-        self.logger.info(f"Starting login process for worker: {worker.idno}")
+        self.logger.info(f"Starting login process for worker: {worker.my_company_idno}")
         try:
             # Perform web-based operations
             self.logger.info("Performing web-based authentication")

@@ -35,17 +35,17 @@ class TaskService:
         existing_tasks = []
         for single_invoice_task in single_invoice_tasks:
             if self.task_repository.single_invoice_entry_exists(
-                single_invoice_task.idno,
+                single_invoice_task.my_company_idno,
                 single_invoice_task.seria,
                 single_invoice_task.number,
-                single_invoice_task.person_name,
+                single_invoice_task.person_name_certificate,
             ):
                 existing_tasks.append(
                     {
-                        "idno": single_invoice_task.idno,
+                        "my_company_idno": single_invoice_task.my_company_idno,
                         "seria": single_invoice_task.seria,
                         "number": single_invoice_task.number,
-                        "person_name": single_invoice_task.person_name,
+                        "person_name_certificate": single_invoice_task.person_name_certificate,
                     }
                 )
         return existing_tasks
@@ -60,13 +60,13 @@ class TaskService:
 
             if isinstance(task, SingleInvoiceIdentifier):
                 task_key = (
-                    task.idno,
+                    task.my_company_idno,
                     task.seria,
                     task.number,
-                    task.person_name,
+                    task.person_name_certificate,
                 )
             else:
-                task_key = (task.idno, task.person_name)
+                task_key = (task.my_company_idno, task.person_name_certificate)
 
             if task_key in seen:
                 duplicates.append(task_key)
@@ -138,9 +138,9 @@ class TaskService:
             DatabaseException: If there's an error saving to the database
         """
         # 1. Check if the task already exists
-        duplicates = self._check_for_duplicates(invoices)
-        if duplicates:
-            raise DuplicateTaskException(f"Duplicates found: {duplicates}")
+        # duplicates = self._check_for_duplicates(invoices)
+        # if duplicates:
+        #     raise DuplicateTaskException(f"Duplicates found: {duplicates}")
 
         for invoice in invoices:
             # 3. Create the multiple invoices entry
@@ -276,16 +276,23 @@ class TaskService:
                 )
             )
 
-            # Structure single tasks by person_name and idno
+            # Structure single tasks by person_name_certificate and my_company_idno
             single_tasks_structured = {}
             for task in single_tasks:
-                if task.person_name not in single_tasks_structured:
-                    single_tasks_structured[task.person_name] = {}
+                if task.person_name_certificate not in single_tasks_structured:
+                    single_tasks_structured[task.person_name_certificate] = {}
 
-                if task.idno not in single_tasks_structured[task.person_name]:
-                    single_tasks_structured[task.person_name][task.idno] = []
+                if (
+                    task.my_company_idno
+                    not in single_tasks_structured[task.person_name_certificate]
+                ):
+                    single_tasks_structured[task.person_name_certificate][
+                        task.my_company_idno
+                    ] = []
 
-                single_tasks_structured[task.person_name][task.idno].append(
+                single_tasks_structured[task.person_name_certificate][
+                    task.my_company_idno
+                ].append(
                     {
                         "seria": task.seria,
                         "number": task.number,
@@ -295,15 +302,29 @@ class TaskService:
                 )
 
             # Structure multiple tasks
-            multiple_tasks_structured = [
-                {
-                    "idno": task.idno,
-                    "person_name": task.person_name,
-                    "task_uuid": task.task_uuid,
-                    "action_type": task.action_type,
-                }
-                for task in multiple_tasks
-            ]
+            multiple_tasks_structured = {}
+            for task in multiple_tasks:
+                if task.person_name_certificate not in multiple_tasks_structured:
+                    multiple_tasks_structured[task.person_name_certificate] = {}
+
+                if (
+                    task.my_company_idno
+                    not in multiple_tasks_structured[task.person_name_certificate]
+                ):
+                    multiple_tasks_structured[task.person_name_certificate][
+                        task.my_company_idno
+                    ] = []
+
+                multiple_tasks_structured[task.person_name_certificate][
+                    task.my_company_idno
+                ].append(
+                    {
+                        "buyer_idno": task.buyer_idno,
+                        "signature_type": task.signature_type,
+                        "task_uuid": task.task_uuid,
+                        "action_type": task.action_type,
+                    }
+                )
 
             return {
                 "SingleInvoiceTask": single_tasks_structured,

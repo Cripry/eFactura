@@ -55,19 +55,25 @@ class MSignWebPage:
         usb_option = auth_blocks[1]
         self._scroll_and_click(usb_option)
 
-    def _find_certificate_card(self, person_name: str) -> WebElement:
-        """Find certificate card by idno"""
-        self.logger.info(f"Looking for certificate card with idno: {person_name}")
+    def _find_certificate_card(self, person_name_certificate: str) -> WebElement:
+        """Find certificate card by my_company_idno"""
+        self.logger.info(
+            f"Looking for certificate card with my_company_idno: {person_name_certificate}"
+        )
         certificate_cards = self.web_handler.wait.wait_for_web_elements(
             MSignSelectors.CERTIFICATE_CARDS.value
         )
 
         for card in certificate_cards:
-            if is_name_contained(person_name, card.text):
-                self.logger.info(f"Found certificate card with idno {person_name}")
+            if is_name_contained(person_name_certificate, card.text):
+                self.logger.info(
+                    f"Found certificate card with my_company_idno {person_name_certificate}"
+                )
                 return card
 
-        raise Exception(f"Certificate card with idno {person_name} not found")
+        raise Exception(
+            f"Certificate card with my_company_idno {person_name_certificate} not found"
+        )
 
     def _click_sign_button(self, card: WebElement) -> None:
         """Click sign button within a certificate card"""
@@ -83,7 +89,7 @@ class MSignWebPage:
         time.sleep(0.5)
         element.click()
 
-    def complete_signing(self, person_name: str, pin: str) -> bool:
+    def complete_signing(self, person_name_certificate: str, pin: str) -> bool:
         """Complete the signing process on MSign website"""
         self.logger.info("Starting MSign signing process")
         try:
@@ -97,7 +103,7 @@ class MSignWebPage:
             self._select_usb_sign_option()
 
             # 2. Find and select certificate
-            certificate_card = self._find_certificate_card(person_name)
+            certificate_card = self._find_certificate_card(person_name_certificate)
 
             # 3. Initiate signing
             self._click_sign_button(certificate_card)

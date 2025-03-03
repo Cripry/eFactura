@@ -31,14 +31,14 @@ class LoginPage:
         element = self.driver.find_element(*LoginPageSelectors.MSIGN_BUTTON.value)
         element.click()
 
-    def select_certificate(self, idno: str):
+    def select_certificate(self, my_company_idno: str):
         container = self.driver.find_element(
             *LoginPageSelectors.CERTIFICATES_CONTAINER.value
         )
         certificates = container.find_elements_by_tag_name("div")
 
         for cert in certificates:
-            if idno in cert.text:
+            if my_company_idno in cert.text:
                 cert.click()
                 return True
         return False

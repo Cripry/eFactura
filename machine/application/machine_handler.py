@@ -22,9 +22,9 @@ class MachineHandler:
     def process_single_invoice_tasks(self, tasks_by_company) -> list[TaskStatusUpdate]:
         """Process single invoice tasks for each company"""
         all_results = []
-        
+
         for certificate_name, company_tasks in tasks_by_company.items():
-            for idno, invoice_tasks in company_tasks.items():
+            for my_company_idno, invoice_tasks in company_tasks.items():
                 try:
                     # Initialize new driver and handlers for each company
                     driver = self.driver_manager.get_driver()
@@ -37,14 +37,20 @@ class MachineHandler:
 
                     try:
                         # Get PIN and create worker
-                        pin = USB_PIN.get_pin(idno)
-                        worker = Worker(idno=idno, pin=pin, person_name=certificate_name)
+                        pin = USB_PIN.get_pin(my_company_idno)
+                        worker = Worker(
+                            my_company_idno=my_company_idno,
+                            pin=pin,
+                            person_name_certificate=certificate_name,
+                        )
 
                         # Login worker
                         login_service.login_worker(worker)
 
                         # Execute tasks with worker instance
-                        results = task_executor.execute_single_invoice_tasks(worker, invoice_tasks)
+                        results = task_executor.execute_single_invoice_tasks(
+                            worker, invoice_tasks
+                        )
                         all_results.extend(results)
 
                     finally:
@@ -53,7 +59,8 @@ class MachineHandler:
 
                 except Exception:
                     self.logger.error(
-                        f"Failed to process tasks for company {idno}", exc_info=True
+                        f"Failed to process tasks for company {my_company_idno}",
+                        exc_info=True,
                     )
                     # Add failed status for all tasks of this company
                     for task in tasks:
@@ -73,7 +80,7 @@ class MachineHandler:
 
         for task in tasks:
             try:
-                idno = task["idno"]
+                my_company_idno = task["my_company_idno"]
 
                 # Initialize new driver and handlers for each task
                 driver = self.driver_manager.get_driver()
@@ -86,8 +93,8 @@ class MachineHandler:
 
                 try:
                     # Get PIN and create worker
-                    pin = USB_PIN.get_pin(idno)
-                    worker = Worker(idno=idno, pin=pin)
+                    pin = USB_PIN.get_pin(my_company_idno)
+                    worker = Worker(my_company_idno=my_company_idno, pin=pin)
 
                     # Login worker
                     login_service.login_worker(worker)
@@ -102,7 +109,7 @@ class MachineHandler:
 
             except Exception as e:
                 self.logger.error(
-                    f"Failed to process task for company {task.get('idno')}: {str(e)}",
+                    f"Failed to process task for company {task.get('my_company_idno')}: {str(e)}",
                     exc_info=True,
                 )
                 all_results.append(

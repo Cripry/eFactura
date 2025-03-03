@@ -117,8 +117,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
         try:
             task = SingleInvoiceTaskDataModel(
                 task_uuid=uuid.uuid4(),
-                idno=invoice.idno,
-                person_name=invoice.person_name,
+                my_company_idno=invoice.my_company_idno,
+                person_name_certificate=invoice.person_name_certificate,
                 seria=invoice.seria,
                 number=invoice.number,
                 action_type=action_type,
@@ -143,8 +143,10 @@ class SQLAlchemyTaskRepository(TaskRepository):
         try:
             task = MultipleInvoicesTaskDataModel(
                 task_uuid=uuid.uuid4(),
-                idno=invoice.idno,
-                person_name=invoice.person_name,
+                my_company_idno=invoice.my_company_idno,
+                person_name_certificate=invoice.person_name_certificate,
+                buyer_idno=invoice.buyer_idno,
+                signature_type=invoice.signature_type,
                 action_type=action_type,
             )
             self.session.add(task)
@@ -166,7 +168,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             # Get task statuses by joining tables and filtering
             task_statuses = (
                 self.session.query(
-                    SingleInvoiceTaskDataModel.idno,
+                    SingleInvoiceTaskDataModel.my_company_idno,
                     SingleInvoiceTaskDataModel.seria,
                     SingleInvoiceTaskDataModel.number,
                     CompanyTaskModel.status,
@@ -176,7 +178,9 @@ class SQLAlchemyTaskRepository(TaskRepository):
                     CompanyTaskModel.task_uuid == SingleInvoiceTaskDataModel.task_uuid,
                 )
                 .filter(
-                    SingleInvoiceTaskDataModel.idno.in_([task.idno for task in tasks]),
+                    SingleInvoiceTaskDataModel.my_company_idno.in_(
+                        [task.my_company_idno for task in tasks]
+                    ),
                     SingleInvoiceTaskDataModel.seria.in_(
                         [task.seria for task in tasks]
                     ),
@@ -191,7 +195,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             return TaskStatusResponse(
                 tasks=[
                     TaskStatusItem(
-                        idno=status.idno,
+                        my_company_idno=status.my_company_idno,
                         seria=status.seria,
                         number=str(
                             status.number
@@ -237,10 +241,10 @@ class SQLAlchemyTaskRepository(TaskRepository):
             # Single query joining CompanyTaskModel with SingleInvoiceTaskDataModel
             waiting_tasks = (
                 self.session.query(
-                    SingleInvoiceTaskDataModel.idno,
+                    SingleInvoiceTaskDataModel.my_company_idno,
                     SingleInvoiceTaskDataModel.seria,
                     SingleInvoiceTaskDataModel.number,
-                    SingleInvoiceTaskDataModel.person_name,
+                    SingleInvoiceTaskDataModel.person_name_certificate,
                     CompanyTaskModel.task_uuid,
                     SingleInvoiceTaskDataModel.action_type,
                 )
@@ -258,9 +262,9 @@ class SQLAlchemyTaskRepository(TaskRepository):
 
             return [
                 SingleInvoiceResponse(
-                    idno=task.idno,
+                    my_company_idno=task.my_company_idno,
                     seria=task.seria,
-                    person_name=task.person_name,
+                    person_name_certificate=task.person_name_certificate,
                     number=task.number,
                     task_uuid=str(task.task_uuid),
                     action_type=task.action_type,
@@ -279,8 +283,10 @@ class SQLAlchemyTaskRepository(TaskRepository):
             # Single query joining CompanyTaskModel with MultipleInvoicesTaskDataModel
             waiting_tasks = (
                 self.session.query(
-                    MultipleInvoicesTaskDataModel.idno,
-                    MultipleInvoicesTaskDataModel.person_name,
+                    MultipleInvoicesTaskDataModel.my_company_idno,
+                    MultipleInvoicesTaskDataModel.person_name_certificate,
+                    MultipleInvoicesTaskDataModel.buyer_idno,
+                    MultipleInvoicesTaskDataModel.signature_type,
                     CompanyTaskModel.task_uuid,
                     MultipleInvoicesTaskDataModel.action_type,
                 )
@@ -299,8 +305,11 @@ class SQLAlchemyTaskRepository(TaskRepository):
 
             return [
                 MultipleInvoicesResponse(
-                    idno=task.idno,
+                    my_company_idno=task.my_company_idno,
                     task_uuid=str(task.task_uuid),
+                    person_name_certificate=task.person_name_certificate,
+                    buyer_idno=task.buyer_idno,
+                    signature_type=task.signature_type,
                     action_type=task.action_type,
                 )
                 for task in waiting_tasks
@@ -311,16 +320,21 @@ class SQLAlchemyTaskRepository(TaskRepository):
             raise DatabaseException("Failed to get waiting tasks", str(e))
 
     def single_invoice_entry_exists(
-        self, idno: str, seria: str, number: int, person_name: str
+        self,
+        my_company_idno: str,
+        seria: str,
+        number: int,
+        person_name_certificate: str,
     ) -> bool:
         try:
             task = (
                 self.session.query(SingleInvoiceTaskDataModel)
                 .filter(
-                    SingleInvoiceTaskDataModel.idno == idno,
+                    SingleInvoiceTaskDataModel.my_company_idno == my_company_idno,
                     SingleInvoiceTaskDataModel.seria == seria,
                     SingleInvoiceTaskDataModel.number == number,
-                    SingleInvoiceTaskDataModel.person_name == person_name,
+                    SingleInvoiceTaskDataModel.person_name_certificate
+                    == person_name_certificate,
                 )
                 .first()
             )
@@ -368,14 +382,16 @@ class SQLAlchemyTaskRepository(TaskRepository):
         self, tasks: List[SingleInvoiceStatusRequest]
     ) -> List[uuid.UUID]:
         try:
-            tasks_idno = [task.idno for task in tasks]
+            tasks_my_company_idno = [task.my_company_idno for task in tasks]
             tasks_seria = [task.seria for task in tasks]
             tasks_number = [task.number for task in tasks]
 
             tasks_uuid = (
                 self.session.query(SingleInvoiceTaskDataModel)
                 .filter(
-                    SingleInvoiceTaskDataModel.idno.in_(tasks_idno),
+                    SingleInvoiceTaskDataModel.my_company_idno.in_(
+                        tasks_my_company_idno
+                    ),
                     SingleInvoiceTaskDataModel.seria.in_(tasks_seria),
                     SingleInvoiceTaskDataModel.number.in_(tasks_number),
                 )
@@ -393,8 +409,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
             task = SingleInvoiceTaskDataModel(
                 task_uuid=uuid.uuid4(),
                 company_uuid=company_uuid,
-                idno=task_data["idno"],
-                person_name=task_data["person_name"],
+                my_company_idno=task_data["my_company_idno"],
+                person_name_certificate=task_data["person_name_certificate"],
                 seria=task_data["seria"],
                 number=task_data["number"],
                 action_type=task_data["action_type"],
@@ -413,8 +429,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
             task = MultipleInvoicesTaskDataModel(
                 task_uuid=uuid.uuid4(),
                 company_uuid=company_uuid,
-                idno=task_data["idno"],
-                person_name=task_data["person_name"],
+                my_company_idno=task_data["my_company_idno"],
+                person_name_certificate=task_data["person_name_certificate"],
                 action_type=task_data["action_type"],
                 status="WAITING",
             )

@@ -30,12 +30,12 @@ class USB_PIN:
     }
 
     @classmethod
-    def get_pin(cls, idno: str) -> str:
+    def get_pin(cls, my_company_idno: str) -> str:
         """Get USB PIN for a company IDNO."""
-        if idno not in cls.IDNO_MAP:
-            raise IDNONotFoundException(idno)
+        if my_company_idno not in cls.IDNO_MAP:
+            raise IDNONotFoundException(my_company_idno)
 
-        env_var = cls.IDNO_MAP[idno]
+        env_var = cls.IDNO_MAP[my_company_idno]
         pin = os.getenv(env_var)
 
         if not pin:

@@ -33,8 +33,8 @@ def upgrade():
     op.create_table(
         "single_invoice_task_data",
         sa.Column("task_uuid", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("idno", sa.String(50), nullable=False),
-        sa.Column("person_name", sa.String(50), nullable=False),
+        sa.Column("my_company_idno", sa.String(50), nullable=False),
+        sa.Column("person_name_certificate", sa.String(50), nullable=False),
         sa.Column("seria", sa.String(50), nullable=False),
         sa.Column("number", sa.Integer(), nullable=False),
         sa.Column("action_type", sa.String(50), nullable=False),
@@ -63,8 +63,10 @@ def upgrade():
     op.create_table(
         "multiple_invoices_task_data",
         sa.Column("task_uuid", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("idno", sa.String(50), nullable=False),
-        sa.Column("person_name", sa.String(50), nullable=False),
+        sa.Column("my_company_idno", sa.String(50), nullable=False),
+        sa.Column("person_name_certificate", sa.String(50), nullable=False),
+        sa.Column("buyer_idno", sa.String(50), nullable=False),
+        sa.Column("signature_type", sa.String(50), nullable=False),
         sa.Column("action_type", sa.String(50), nullable=False),
     )
 

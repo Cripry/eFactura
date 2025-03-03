@@ -64,7 +64,7 @@ def test_company(db_session):
 @pytest.fixture
 def test_task_data():
     """Return sample task data"""
-    return [{"idno": "123", "seria": "A", "number": 1}]
+    return [{"my_company_idno": "123", "seria": "A", "number": 1}]
 
 
 @pytest.fixture

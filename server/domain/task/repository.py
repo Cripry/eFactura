@@ -62,7 +62,9 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
-    def single_invoice_entry_exists(self, idno: str, seria: str, number: int) -> bool:
+    def single_invoice_entry_exists(
+        self, my_company_idno: str, seria: str, number: int
+    ) -> bool:
         pass
 
     @abstractmethod
@@ -80,4 +82,3 @@ class TaskRepository(ABC):
         self, tasks: List[SingleInvoiceStatusRequest]
     ) -> List[uuid.UUID]:
         pass
-

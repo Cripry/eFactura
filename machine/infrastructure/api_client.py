@@ -38,7 +38,7 @@ class APIClient:
             },
             "MultipleInvoicesTask": [
                 {
-                    "idno": "2400903403013",
+                    "my_company_idno": "2400903403013",
                     "task_uuid": "39ddb767-6d42-4f24-9a45-bf5f07ec1f7d",
                     "action_type": "SupplierSignAllDraftedInvoices"
                 }

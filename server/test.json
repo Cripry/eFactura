@@ -75,17 +75,17 @@
     },
     "MultipleInvoicesTask": [
         {
-            "idno": "2400903403013",
+            "my_company_idno": "2400903403013",
             "task_uuid": "39ddb767-6d42-4f24-9a45-bf5f07ec1f7d",
             "action_type": "SupplierSignAllDraftedInvoices"
         },
         {
-            "idno": "20090340301312",
+            "my_company_idno": "20090340301312",
             "task_uuid": "3633b22d-d494-4aa0-89ee-cdf16193aab7",
             "action_type": "SupplierSignAllDraftedInvoices"
         },
         {
-            "idno": "200903401213013",
+            "my_company_idno": "200903401213013",
             "task_uuid": "9db1ed29-6dfb-40cf-9d97-236c887cab1f",
             "action_type": "SupplierSignAllDraftedInvoices"
         }

@@ -13,7 +13,7 @@ class TaskStatus(str, Enum):
 
 @dataclass
 class Certificate:
-    idno: str
+    my_company_idno: str
     name: str
     status: str
 
@@ -26,7 +26,7 @@ class Task:
 
 @dataclass
 class TaskResult:
-    idno: str
+    my_company_idno: str
     seria: str
     number: int
     status: TaskStatus
@@ -35,18 +35,19 @@ class TaskResult:
 
 @dataclass
 class CompanyTasks:
-    idno: str
+    my_company_idno: str
     tasks: List[Task]
 
 
 @dataclass
 class Session:
-    idno: str
-    person_name: str
+    my_company_idno: str
+    person_name_certificate: str
+
 
 @dataclass
 class Worker:
-    idno: str
+    my_company_idno: str
     pin: str
-    person_name: str
+    person_name_certificate: str
     role: str = "Administrator"

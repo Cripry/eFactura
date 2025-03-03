@@ -35,7 +35,7 @@ class SingleInvoiceTask(BaseModel):
 
 
 class MultipleInvoicesTask(BaseModel):
-    idno: str
+    my_company_idno: str
     task_uuid: str
     action_type: MultipleInvoicesAction
 

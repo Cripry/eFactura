@@ -187,7 +187,9 @@ class EfacturaWebPage:
             raise Exception("Failed to start signing procedure")
 
         # 2. Complete MSign signing
-        if not self.msign_service.complete_signing(self.worker.person_name, self.worker.pin):
+        if not self.msign_service.complete_signing(
+            self.worker.person_name_certificate, self.worker.pin
+        ):
             raise Exception("Failed to complete MSign signing")
 
         return True

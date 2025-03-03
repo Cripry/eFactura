@@ -12,20 +12,24 @@ class SingleInvoiceTaskDataModel(Base):
     __tablename__ = "single_invoice_task_data"
 
     task_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    idno = Column(String(50), nullable=False)
-    person_name = Column(String(50), nullable=False)
+    my_company_idno = Column(String(50), nullable=False)
+    person_name_certificate = Column(String(50), nullable=False)
     seria = Column(String(50), nullable=False)
     number = Column(Integer, nullable=False)
     action_type = Column(String(50), nullable=False)
-    __table_args__ = (UniqueConstraint("idno", "seria", "number", name="unique_task"),)
+    __table_args__ = (
+        UniqueConstraint("my_company_idno", "seria", "number", name="unique_task"),
+    )
 
 
 class MultipleInvoicesTaskDataModel(Base):
     __tablename__ = "multiple_invoices_task_data"
 
     task_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    idno = Column(String(50), nullable=False)
-    person_name = Column(String(50), nullable=False)
+    my_company_idno = Column(String(50), nullable=False)
+    person_name_certificate = Column(String(50), nullable=False)
+    buyer_idno = Column(String(50), nullable=False)
+    signature_type = Column(String(50), nullable=False)
     action_type = Column(String(50), nullable=False)
 
 

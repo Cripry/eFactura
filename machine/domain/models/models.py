@@ -21,7 +21,7 @@ class Task:
 
 @dataclass
 class TaskResult:
-    idno: str
+    my_company_idno: str
     seria: str
     number: int
     status: TaskStatus
@@ -30,12 +30,12 @@ class TaskResult:
 
 @dataclass
 class CompanyTasks:
-    idno: str
+    my_company_idno: str
     tasks: List[Task]
 
 
 class TaskRequest(BaseModel):
-    idno: str
+    my_company_idno: str
     seria: str
     number: int
 

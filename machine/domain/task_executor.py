@@ -18,7 +18,9 @@ class TaskExecutor:
         self, worker: Worker, tasks: List[dict]
     ) -> List[TaskStatusUpdate]:
         """Execute single invoice tasks for a specific company"""
-        self.logger.info(f"Processing {len(tasks)} tasks for company {worker.idno}")
+        self.logger.info(
+            f"Processing {len(tasks)} tasks for company {worker.my_company_idno}"
+        )
         results = []
 
         try:
@@ -56,7 +58,8 @@ class TaskExecutor:
 
         except Exception:
             self.logger.error(
-                f"Failed to process tasks for company {worker.idno}", exc_info=True
+                f"Failed to process tasks for company {worker.my_company_idno}",
+                exc_info=True,
             )
             # Add FAILED status for all remaining tasks
             for task in tasks:
@@ -73,7 +76,9 @@ class TaskExecutor:
         self, worker: Worker, task: dict
     ) -> TaskStatusUpdate:
         """Execute multiple invoice task for a specific company"""
-        self.logger.info(f"Processing multiple invoice task for company {worker.idno}")
+        self.logger.info(
+            f"Processing multiple invoice task for company {worker.my_company_idno}"
+        )
 
         try:
             action_type = task["action_type"]
@@ -93,7 +98,7 @@ class TaskExecutor:
                     )
                 except Exception as e:
                     self.logger.error(
-                        f"Failed to sign all invoices for company {worker.idno}: {str(e)}",
+                        f"Failed to sign all invoices for company {worker.my_company_idno}: {str(e)}",
                         exc_info=True,
                     )
                     return TaskStatusUpdate(
@@ -105,7 +110,7 @@ class TaskExecutor:
 
         except Exception as e:
             self.logger.error(
-                f"Failed to process task for company {worker.idno}: {str(e)}",
+                f"Failed to process task for company {worker.my_company_idno}: {str(e)}",
                 exc_info=True,
             )
             return TaskStatusUpdate(

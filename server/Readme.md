@@ -168,13 +168,13 @@ Request body:
 {
     "tasks": [
         {
-            "idno": "1002600012345",
+            "my_company_idno": "1002600012345",
             "seria": "AAB12C",
             "number": "1234567",
             "action_type": "BuyerSignInvoice"
         },
         {
-            "idno": "1002600012345",
+            "my_company_idno": "1002600012345",
             "seria": "AAB12C",
             "number": "1234568",
             "action_type": "BuyerSignInvoice"
@@ -209,7 +209,7 @@ Request body:
 {
     "tasks": [
         {
-            "idno": "1002600012345",
+            "my_company_idno": "1002600012345",
             "action_type": "SupplierSignAllDraftedInvoices"
         }
     ]

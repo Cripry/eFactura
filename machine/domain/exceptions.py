@@ -25,8 +25,10 @@ class USBNotFoundException(MachineException):
 class CertificateNotFoundException(Exception):
     """Exception raised when certificate is not found"""
 
-    def __init__(self, idno: str):
-        super().__init__(f"Certificate with idno {idno} not found")
+    def __init__(self, my_company_idno: str):
+        super().__init__(
+            f"Certificate with my_company_idno {my_company_idno} not found"
+        )
 
 
 class LoginFailedException(Exception):
@@ -46,7 +48,7 @@ class NavigationException(Exception):
 class IDNONotFoundException(Exception):
     """Exception raised when an IDNO is not found in the USB_PIN mapping"""
 
-    def __init__(self, idno: str, message: str = None):
-        self.idno = idno
-        self.message = message or f"No USB PIN configured for IDNO: {idno}"
+    def __init__(self, my_company_idno: str, message: str = None):
+        self.my_company_idno = my_company_idno
+        self.message = message or f"No USB PIN configured for IDNO: {my_company_idno}"
         super().__init__(self.message)

@@ -79,8 +79,10 @@ class SeleniumLoginHandler:
         element = self.driver.find_element(*LoginPageSelectors.LOGIN_MSIGN_BUTTON.value)
         element.click()
 
-    def select_certificate(self, person_name: str) -> bool:
-        self.logger.info(f"Selecting certificate for person_name: {person_name}")
+    def select_certificate(self, person_name_certificate: str) -> bool:
+        self.logger.info(
+            f"Selecting certificate for person_name_certificate: {person_name_certificate}"
+        )
 
         try:
             # Wait for certificate page to load
@@ -97,12 +99,12 @@ class SeleniumLoginHandler:
             certificates = container.find_elements(By.TAG_NAME, "button")
 
             for cert in certificates:
-                if is_name_contained(person_name, cert.text):
+                if is_name_contained(person_name_certificate, cert.text):
                     self.logger.debug(f"Found matching certificate: {cert.text}")
                     cert.click()
                     return True
 
-            raise CertificateNotFoundException(person_name)
+            raise CertificateNotFoundException(person_name_certificate)
         except Exception as e:
             self.logger.error(f"Certificate selection failed: {str(e)}")
             raise
@@ -118,10 +120,13 @@ class SeleniumLoginHandler:
             self.click_usb_sign_option()
 
             # Select certificate
-            self.select_certificate(worker.person_name)
+            self.select_certificate(worker.person_name_certificate)
 
             self.logger.info("Web authentication and certificate selection completed")
-            return Session(idno=worker.idno, person_name=worker.person_name)
+            return Session(
+                my_company_idno=worker.my_company_idno,
+                person_name_certificate=worker.person_name_certificate,
+            )
         except Exception as e:
             self.logger.error(f"Web authentication failed: {str(e)}")
             raise Exception(f"Web authentication failed: {str(e)}")
@@ -150,7 +155,7 @@ class SeleniumLoginHandler:
             company_dropdown.click()
             time.sleep(2)
 
-            # Find company by idno
+            # Find company by my_company_idno
             companies_container = self.wait.wait_for_web_element(
                 LoginPageSelectors.COMPANIES_LIST.value
             )
@@ -160,14 +165,18 @@ class SeleniumLoginHandler:
 
             company_found = False
             for company in companies:
-                if worker.idno in company.text:
-                    self.logger.info(f"Found company with idno {worker.idno}")
+                if worker.my_company_idno in company.text:
+                    self.logger.info(
+                        f"Found company with my_company_idno {worker.my_company_idno}"
+                    )
                     company.click()
                     company_found = True
                     break
 
             if not company_found:
-                raise Exception(f"Company with idno {worker.idno} not found")
+                raise Exception(
+                    f"Company with my_company_idno {worker.my_company_idno} not found"
+                )
 
             time.sleep(1)
 
@@ -273,7 +282,9 @@ class SeleniumLoginHandler:
             self._remove_debug_bar()
 
             # Find and select company
-            target_row = self._find_company_row_by_idno(worker.idno)
+            target_row = self._find_company_row_by_my_company_idno(
+                worker.my_company_idno
+            )
             self._click_administration_button(target_row)
 
             # Remove debug bar
@@ -292,9 +303,11 @@ class SeleniumLoginHandler:
             self.logger.error(f"Failed to navigate to e-factura platform: {str(e)}")
             raise Exception(f"Navigation to e-Factura failed: {str(e)}")
 
-    def _find_company_row_by_idno(self, idno: str) -> WebElement:
-        """Find company row by idno"""
-        self.logger.info(f"Searching for company with idno: {idno}")
+    def _find_company_row_by_my_company_idno(self, my_company_idno: str) -> WebElement:
+        """Find company row by my_company_idno"""
+        self.logger.info(
+            f"Searching for company with my_company_idno: {my_company_idno}"
+        )
         company_rows = self.wait.wait_for_web_elements(
             SFSSelectors.COMPANY_GRID_ITEM.value
         )
@@ -304,14 +317,18 @@ class SeleniumLoginHandler:
 
         for row in company_rows:
             try:
-                idno_span = row.find_element(*SFSSelectors.COMPANY_idno.value)
-                if idno in idno_span.text:
-                    self.logger.info(f"Found company row with idno {idno}")
+                my_company_idno_span = row.find_element(
+                    *SFSSelectors.COMPANY_my_company_idno.value
+                )
+                if my_company_idno in my_company_idno_span.text:
+                    self.logger.info(
+                        f"Found company row with my_company_idno {my_company_idno}"
+                    )
                     return row
             except Exception:
                 continue
 
-        raise Exception(f"Company row with idno {idno} not found")
+        raise Exception(f"Company row with my_company_idno {my_company_idno} not found")
 
     def _click_administration_button(self, row: WebElement) -> None:
         """Click administration button for a company row"""

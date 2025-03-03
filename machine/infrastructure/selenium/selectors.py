@@ -57,7 +57,7 @@ class SFSSelectors(Enum):
     """Selectors for SFS portal"""
 
     COMPANY_GRID_ITEM = (By.CLASS_NAME, "compania-grid-item--content")
-    COMPANY_idno = (By.CLASS_NAME, "subtitle_name-company")
+    COMPANY_my_company_idno = (By.CLASS_NAME, "subtitle_name-company")
     ADMIN_BUTTON = (By.CLASS_NAME, "btn_company-default")
     EFACTURA_BLOCK = (By.CLASS_NAME, "inner_block_top-promoternus")
 
