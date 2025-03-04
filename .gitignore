@@ -53,3 +53,9 @@ coverage.xml
 
 
 .log
+
+# Images
+machine/resources/images/
+
+# Config
+machine/config/config.json  
