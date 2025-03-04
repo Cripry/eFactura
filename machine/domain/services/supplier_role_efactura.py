@@ -140,16 +140,3 @@ class SupplierRoleEfactura(EfacturaWebPage):
         )
 
         self.logger.info("Successfully completed signing process")
-
-    def _complete_second_signature_signing_process(self) -> None:
-        """Complete second signature signing process"""
-        self.logger.info("Completing second signature signing process")
-
-        # 1. Navigate to signed invoices page
-        self._navigate_to_applyied_first_signature()
-
-        # 2. Select all invoices
-        self._select_all_invoices()
-
-        # 3. Complete signing process
-        self._complete_second_signature_signing_process()
