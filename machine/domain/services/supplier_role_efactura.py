@@ -3,7 +3,7 @@ import time
 from typing import Optional
 
 import pyperclip
-from domain.task.schemas import SignatureType
+from machine.domain.schemas import SignatureType
 from machine.domain.models.navigation.urls import SupplierUrls
 from machine.domain.services.efactura_web_page import EfacturaWebPage
 from machine.domain.services.msign_web_page import MSignWebPage

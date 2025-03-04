@@ -1,5 +1,5 @@
 from typing import Optional, Union
-from domain.task.schemas import SignatureType
+from machine.domain.schemas import SignatureType
 from machine.domain.models.dataclass.dataclass import Worker
 from selenium.webdriver.common.by import By
 import time
