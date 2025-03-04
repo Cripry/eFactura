@@ -42,10 +42,19 @@ class SupplierRoleEfactura(EfacturaWebPage):
         # 2. Select all invoices
         self._select_buyer(company_idno)
 
-        # 3. Complete signing process
+        # 3. Apply first signature
         self._complete_signing_process(signature_type)
 
         # 4. Wait until all invoices are signed
+        self._wait_until_all_invoices_signed()
+
+        # 5. Navigate to  applied first signature page
+        self._navigate_to_applyied_first_signature()
+
+        # 5. Apply second signature
+        self._complete_signing_process(signature_type)
+
+        # 6. Wait until all invoices are signed
         self._wait_until_all_invoices_signed()
 
     def _navigate_to_new_invoices(self) -> None:
@@ -53,6 +62,13 @@ class SupplierRoleEfactura(EfacturaWebPage):
         self.logger.info("Navigating to new invoices page")
         self.web_handler.navigate_to_url(
             f"{self.web_handler.efactura_base_url}{SupplierUrls.NEW_INVOICE.value}"
+        )
+
+    def _navigate_to_applyied_first_signature(self) -> None:
+        """Navigate to applyied first signare page"""
+        self.logger.info("Navigating to applyied first signare page")
+        self.web_handler.navigate_to_url(
+            f"{self.web_handler.efactura_base_url}{SupplierUrls.APPLYIED_FIRST_SIGNATURE.value}"
         )
 
     def _select_all_invoices(self) -> bool:
@@ -124,3 +140,16 @@ class SupplierRoleEfactura(EfacturaWebPage):
         )
 
         self.logger.info("Successfully completed signing process")
+
+    def _complete_second_signature_signing_process(self) -> None:
+        """Complete second signature signing process"""
+        self.logger.info("Completing second signature signing process")
+
+        # 1. Navigate to signed invoices page
+        self._navigate_to_applyied_first_signature()
+
+        # 2. Select all invoices
+        self._select_all_invoices()
+
+        # 3. Complete signing process
+        self._complete_second_signature_signing_process()

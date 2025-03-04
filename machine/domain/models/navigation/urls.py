@@ -62,3 +62,4 @@ class SupplierUrls(Enum):
     """URLs specific to supplier role"""
 
     NEW_INVOICE = "/#Home/My_Draft"
+    APPLYIED_FIRST_SIGNATURE = "/#Home/Signed_1"
