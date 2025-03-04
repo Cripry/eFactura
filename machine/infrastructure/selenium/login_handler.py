@@ -139,11 +139,13 @@ class SeleniumLoginHandler:
         no_new_companies_count = 0  # Counter for consecutive no-new-companies
         max_no_new_companies = 4  # Max attempts with no new companies
 
+        # Get the companies container once
+        companies_container = self.wait.wait_for_web_element(
+            LoginPageSelectors.COMPANIES_LIST.value
+        )
+
         while no_new_companies_count < max_no_new_companies:
-            # Get current list of companies
-            companies_container = self.wait.wait_for_web_element(
-                LoginPageSelectors.COMPANIES_LIST.value
-            )
+            # Get current list of companies within the container
             current_companies = companies_container.find_elements(
                 *LoginPageSelectors.COMPANY_ITEMS.value
             )
@@ -176,10 +178,13 @@ class SeleniumLoginHandler:
             else:
                 no_new_companies_count = 0  # Reset counter if we found new companies
 
-            # Scroll to last element to trigger loading of new companies
+            # Scroll to last element within the container
             if current_companies:
                 self.driver.execute_script(
-                    "arguments[0].scrollIntoView();", current_companies[-1]
+                    """
+                    arguments[0].scrollTop = arguments[0].scrollHeight;
+                    """,
+                    companies_container,
                 )
                 time.sleep(2)  # Wait for new companies to load
 
