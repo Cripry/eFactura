@@ -114,11 +114,6 @@ class MachineHandler:
                 f"Failed to process task for person: {certificate_name} and company idno: {my_company_idno}: {str(e)}",
                 exc_info=True,
             )
-            all_results.append(
-                TaskStatusUpdate(
-                    task_uuid=invoice_tasks.get("task_uuid"), status=TaskStatus.FAILED
-                )
-            )
 
         finally:
             # Always close the driver

@@ -25,6 +25,7 @@ from machine.domain.models.navigation.urls import (
 )
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 def is_name_contained(search_term: str, text: str) -> bool:
@@ -144,6 +145,15 @@ class SeleniumLoginHandler:
             LoginPageSelectors.COMPANIES_LIST.value
         )
 
+        # Focus on the container by moving mouse to it
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView();", companies_container
+        )
+        time.sleep(0.5)
+
+        # Create ActionChains instance for mouse actions
+        actions = ActionChains(self.driver)
+
         while no_new_companies_count < max_no_new_companies:
             # Get current list of companies within the container
             current_companies = companies_container.find_elements(
@@ -178,14 +188,14 @@ class SeleniumLoginHandler:
             else:
                 no_new_companies_count = 0  # Reset counter if we found new companies
 
-            # Scroll to last element within the container
+            # Simulate mouse wheel scroll within the container
             if current_companies:
-                self.driver.execute_script(
-                    """
-                    arguments[0].scrollTop = arguments[0].scrollHeight;
-                    """,
-                    companies_container,
-                )
+                # Move mouse to the container
+                actions.move_to_element(companies_container).perform()
+                time.sleep(0.2)
+
+                # Scroll down using mouse wheel
+                actions.scroll_by_amount(0, 300).perform()  # Scroll 300 pixels down
                 time.sleep(2)  # Wait for new companies to load
 
         return False
