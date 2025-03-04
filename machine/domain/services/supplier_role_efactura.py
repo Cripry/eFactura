@@ -42,6 +42,8 @@ class SupplierRoleEfactura(EfacturaWebPage):
         # 2. Select all invoices
         self._select_buyer(company_idno)
 
+        self._select_all_invoices()
+
         # 3. Apply first signature
         self._complete_signing_process()
 
@@ -51,10 +53,13 @@ class SupplierRoleEfactura(EfacturaWebPage):
         # 5. Navigate to  applied first signature page
         self._navigate_to_applyied_first_signature()
 
-        # 5. Apply second signature
+        # 6. Select all invoices for second signature
+        self._select_all_invoices()
+
+        # 7. Apply second signature
         self._complete_signing_process(signature_type)
 
-        # 6. Wait until all invoices are signed
+        # 8. Wait until all invoices are signed
         self._wait_until_all_invoices_signed()
 
     def _navigate_to_new_invoices(self) -> None:
@@ -121,8 +126,6 @@ class SupplierRoleEfactura(EfacturaWebPage):
             ).click()
 
             time.sleep(1)
-
-            self._select_all_invoices()
 
             return True
         except Exception as e:
