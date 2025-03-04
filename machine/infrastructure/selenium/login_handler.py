@@ -200,10 +200,34 @@ class SeleniumLoginHandler:
 
             # 3. Scroll within the container
             if current_companies:
-                # Scroll down by 100 pixels within the container
+                # Use JavaScript to position mouse in the middle of the dropdown and scroll
                 self.driver.execute_script(
-                    "arguments[0].scrollBy(0, 100);", companies_container
+                    """
+                    // Get the dropdown area element
+                    const dropdownArea = document.querySelector(arguments[1]);
+                    
+                    // Calculate middle position
+                    const rect = dropdownArea.getBoundingClientRect();
+                    const middleX = rect.left + (rect.width / 2);
+                    const middleY = rect.top + (rect.height / 2);
+                    
+                    // Create and dispatch mouseover event at the middle position
+                    const mouseOverEvent = new MouseEvent('mouseover', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: middleX,
+                        clientY: middleY
+                    });
+                    dropdownArea.dispatchEvent(mouseOverEvent);
+                    
+                    // Scroll the container by 200 pixels
+                    arguments[0].scrollBy(0, 200);
+                """,
+                    companies_container,
+                    LoginPageSelectors.SELECT_AREA_DROPDOWN.value[1],
                 )
+
                 time.sleep(1)  # Wait for new companies to load
 
         return False

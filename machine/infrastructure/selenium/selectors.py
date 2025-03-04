@@ -20,6 +20,8 @@ class LoginPageSelectors(Enum):
         '//*[@id="app_vue"]/section/div/div/div/div/div[1]/div[2]/div/div',
     )
     COMPANY_ITEMS = (By.CLASS_NAME, "select-area-dropdown-item")
+    SELECT_AREA_DROPDOWN = (By.CLASS_NAME, "select-area-dropdown")
+
     ROLE_DROPDOWN = (
         By.XPATH,
         '//*[@id="app_vue"]/section/div/div/div/div/div[1]/div[3]/div/span',
