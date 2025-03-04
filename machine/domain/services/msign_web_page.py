@@ -40,20 +40,31 @@ class MSignWebPage:
         self.logger = logging.getLogger(__name__)
 
     def _select_usb_sign_option(self) -> None:
-        """Select the second USB signing option"""
-        self.logger.info("Selecting USB signing option")
+        """Select the USB signing option containing 'Semnătura electronică'"""
+        self.logger.info("Selecting USB signing option with 'Semnătura electronică'")
+
+        # Get all authentication blocks
         auth_blocks = self.web_handler.wait.wait_for_web_elements(
             MSignSelectors.USB_SIGN_OPTION.value
         )
 
-        if len(auth_blocks) < 2:
+        # Find the block containing "Semnătura electronică"
+        target_block = None
+        for block in auth_blocks:
+            if "Semnătura electronică" in block.text:
+                target_block = block
+                break
+
+        if not target_block:
             raise Exception(
-                f"Expected at least 2 authentication blocks, found {len(auth_blocks)}"
+                "Authentication block with 'Semnătura electronică' not found"
             )
 
-        # Select the second authentication block
-        usb_option = auth_blocks[1]
-        self._scroll_and_click(usb_option)
+        # Click on the found block
+        self._scroll_and_click(target_block)
+        self.logger.info(
+            "Successfully selected USB signing option with 'Semnătura electronică'"
+        )
 
     def _find_certificate_card(self, person_name_certificate: str) -> WebElement:
         """Find certificate card by my_company_idno"""

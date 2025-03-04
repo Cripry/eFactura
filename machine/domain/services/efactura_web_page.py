@@ -185,13 +185,6 @@ class EfacturaWebPage:
             self.logger.error(f"Failed to start signing procedure: {str(e)}")
             return False
 
-    def _complete_signing_process(
-        self, signature_type: Union[SignatureType, None] = None
-    ) -> bool:
-        """Complete the signing process (common for both roles)"""
-
-
-        return True
 
     def close_popup_if_exists(self, timeout: int = 6) -> None:
         """
