@@ -1,7 +1,7 @@
 {
     "api": {
-        "AUTH_TOKEN": "e8de0b2280b652c0bb7fd88a5289f4d705b4326aaa6ef20957a5616af9f908c5",
-        "API_BASE_URL": "http://localhost:7989",
+        "AUTH_TOKEN": "d54a860381ea263ad65c87b5038fdb6eec68cf43b99448627d651319f505cb59",
+        "API_BASE_URL": "https://signefactura.fintaxy.com",
         "POLL_INTERVAL": 10,
         "TASK_TIMEOUT": 300
     },
