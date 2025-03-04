@@ -2,7 +2,11 @@ import logging
 from typing import List
 from machine.domain.models import TaskStatus
 from machine.domain.exceptions import USBNotFoundException
-from machine.domain.schemas import TaskStatusUpdate
+from machine.domain.schemas import (
+    TaskStatusUpdate,
+    MultipleInvoicesTask,
+    SingleInvoiceTask,
+)
 from machine.domain.models.dataclass.dataclass import Worker
 from machine.domain.services.buyer_role_efactura import BuyerRoleEfactura
 from machine.domain.services.supplier_role_efactura import SupplierRoleEfactura
@@ -15,7 +19,7 @@ class TaskExecutor:
         self.logger = logging.getLogger(__name__)
 
     def execute_single_invoice_tasks(
-        self, worker: Worker, tasks: List[dict]
+        self, worker: Worker, tasks: List[SingleInvoiceTask]
     ) -> List[TaskStatusUpdate]:
         """Execute single invoice tasks for a specific company"""
         self.logger.info(
@@ -73,7 +77,7 @@ class TaskExecutor:
         return results
 
     def execute_multiple_invoice_tasks(
-        self, worker: Worker, task: dict
+        self, worker: Worker, invoice_tasks: List[MultipleInvoicesTask]
     ) -> TaskStatusUpdate:
         """Execute multiple invoice task for a specific company"""
         self.logger.info(
@@ -81,32 +85,36 @@ class TaskExecutor:
         )
 
         try:
-            action_type = task["action_type"]
-            task_uuid = task["task_uuid"]
 
-            if action_type == "SupplierSignAllDraftedInvoices":
-                # Create supplier service
-                supplier_service = SupplierRoleEfactura(
-                    worker, self.web_handler, self.desktop_handler
-                )
+            for task in invoice_tasks:
+                action_type = task["action_type"]
+                task_uuid = task["task_uuid"]
 
-                try:
-                    # Execute signing
-                    supplier_service.sign_all_invoices()
-                    return TaskStatusUpdate(
-                        task_uuid=task_uuid, status=TaskStatus.COMPLETED
+                if action_type == "SupplierSignAllDraftedInvoices":
+                    # Create supplier service
+                    supplier_service = SupplierRoleEfactura(
+                        worker, self.web_handler, self.desktop_handler
                     )
-                except Exception as e:
-                    self.logger.error(
-                        f"Failed to sign all invoices for company {worker.my_company_idno}: {str(e)}",
-                        exc_info=True,
-                    )
-                    return TaskStatusUpdate(
-                        task_uuid=task_uuid, status=TaskStatus.FAILED
-                    )
-            else:
-                self.logger.warning(f"Unknown action type: {action_type}")
-                return TaskStatusUpdate(task_uuid=task_uuid, status=TaskStatus.FAILED)
+
+                    try:
+                        # Execute signing
+                        supplier_service.sign_all_invoices(
+                            task["buyer_idno"], task["signature_type"]
+                        )
+                        return TaskStatusUpdate(
+                            task_uuid=task_uuid, status=TaskStatus.COMPLETED
+                        )
+                    except Exception as e:
+                        self.logger.error(
+                            f"Failed to sign all invoices for company {worker.my_company_idno}: {str(e)}",
+                            exc_info=True,
+                        )
+                        return TaskStatusUpdate(
+                            task_uuid=task_uuid, status=TaskStatus.FAILED
+                        )
+                else:
+                    self.logger.warning(f"Unknown action type: {action_type}")
+                    return TaskStatusUpdate(task_uuid=task_uuid, status=TaskStatus.FAILED)
 
         except Exception as e:
             self.logger.error(

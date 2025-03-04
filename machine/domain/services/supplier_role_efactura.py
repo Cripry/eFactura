@@ -1,11 +1,17 @@
 import logging
+import time
 from typing import Optional
+
+import pyperclip
+from domain.task.schemas import SignatureType
 from machine.domain.models.navigation.urls import SupplierUrls
 from machine.domain.services.efactura_web_page import EfacturaWebPage
 from machine.domain.services.msign_web_page import MSignWebPage
 from machine.infrastructure.selenium.selectors import (
     EFacturaSelectors,
 )
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 
 class SupplierRoleEfactura(EfacturaWebPage):
@@ -24,7 +30,9 @@ class SupplierRoleEfactura(EfacturaWebPage):
         """Supplier-specific actions"""
         raise NotImplementedError
 
-    def sign_all_invoices(self) -> None:
+    def sign_all_invoices(
+        self, company_idno: str, signature_type: SignatureType
+    ) -> None:
         """Sign all invoices created by supplier"""
         self.logger.info("Starting to sign all invoices")
 
@@ -32,10 +40,13 @@ class SupplierRoleEfactura(EfacturaWebPage):
         self._navigate_to_new_invoices()
 
         # 2. Select all invoices
-        self._select_all_invoices()
+        self._select_buyer(company_idno)
 
         # 3. Complete signing process
-        return self._complete_signing_process()
+        self._complete_signing_process(signature_type)
+
+        # 4. Wait until all invoices are signed
+        self._wait_until_all_invoices_signed()
 
     def _navigate_to_new_invoices(self) -> None:
         """Navigate to new invoices page"""
@@ -62,3 +73,54 @@ class SupplierRoleEfactura(EfacturaWebPage):
         except Exception as e:
             self.logger.error(f"Failed to select all invoices: {str(e)}")
             return False
+
+    def _select_buyer(self, company_idno: str) -> bool:
+        """Select buyer from dropdown"""
+        self.logger.info("Selecting buyer")
+
+        try:
+            buyer_input_field = self.web_handler.wait.wait_for_web_element_clickable(
+                EFacturaSelectors.BUYER_INPUT_FIELD.value
+            )
+
+            buyer_input_field.click()
+
+            time.sleep(1)
+
+            action = ActionChains(self.web_handler.driver)
+
+            pyperclip.copy(company_idno)  # Copy to clipboard
+            action.key_down(Keys.CONTROL).send_keys("v").key_up(Keys.CONTROL).perform()
+
+            time.sleep(1)
+
+            # Select first input choise
+            self.web_handler.wait.wait_for_web_element_clickable(
+                EFacturaSelectors.BUYER_FIRST_INPUT_CHOISE.value
+            ).click()
+
+            # Click find company button
+            self.web_handler.wait.wait_for_web_element_clickable(
+                EFacturaSelectors.FIND_COMPANY_BUTTON.value
+            ).click()
+
+            time.sleep(1)
+
+            self._select_all_invoices()
+
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to select buyer: {str(e)}")
+            return False
+
+    def _wait_until_all_invoices_signed(self) -> None:
+        """Wait until all invoices are signed"""
+        self.logger.info("Waiting until all invoices are signed")
+
+        # Then wait until we are redirected back to the main page
+        self.logger.info("Waiting to be redirected back to the main page")
+        self.web_handler.condition_handler.wait_until_url_matches_domain(
+            self.web_handler.efactura_base_url
+        )
+
+        self.logger.info("Successfully completed signing process")

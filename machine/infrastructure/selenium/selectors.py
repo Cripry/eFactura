@@ -52,6 +52,17 @@ class EFacturaSelectors(Enum):
         '//*[@id="content"]/div[3]/div/div[3]/table/tbody/tr/td[1]/input',
     )
 
+    BUYER_INPUT_FIELD = (
+        By.XPATH,
+        '//*[@id="sec_info"]/table/tbody/tr[1]/td[1]/table/tbody/tr[2]/td/div',
+    )
+
+    BUYER_FIRST_INPUT_CHOISE = (By.CSS_SELECTOR, ".fm-popup a.fm-o-a:first-of-type")
+    FIND_COMPANY_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[1]/div[2]/a[2]')
+
+    SHORT_RADIO_BUTTON = (By.XPATH, '//*[@id="sendtoBuyer-confirmcircle"]/div/input[1]')
+    LONG_RADIO_BUTTON = (By.XPATH, '//*[@id="sendtoBuyer-confirmcircle"]/div/input[2]')
+
 
 class SFSSelectors(Enum):
     """Selectors for SFS portal"""

@@ -111,8 +111,8 @@ class MSignWebPage:
             # 4. Handle MSign desktop app interaction
             self.logger.info("Handling MSign desktop interaction...")
             self.desktop_handler.input_pin(pin)
+
             self.logger.info("MSign signing process completed")
-            time.sleep(6)  # Wait for signing to complete
 
             return True
 

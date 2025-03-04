@@ -27,6 +27,11 @@ class TaskStatus(str, Enum):
     USB_NOT_FOUND = "USB_NOT_FOUND"
 
 
+class SignatureType(str, Enum):
+    LONG = "LONG"
+    SHORT = "SHORT"
+
+
 class SingleInvoiceTask(BaseModel):
     seria: str
     number: str
@@ -36,6 +41,8 @@ class SingleInvoiceTask(BaseModel):
 
 class MultipleInvoicesTask(BaseModel):
     my_company_idno: str
+    buyer_idno: str
+    signature_type: SignatureType
     task_uuid: str
     action_type: MultipleInvoicesAction
 

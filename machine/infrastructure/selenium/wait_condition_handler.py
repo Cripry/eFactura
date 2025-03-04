@@ -1,7 +1,6 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from typing import Dict, Tuple
 from machine.domain.models.selectors.component_characteristics import (
     ComponentCharacteristics,
 )
@@ -29,3 +28,24 @@ class WaitConditionHandler:
             return True
         except Exception as e:
             raise Exception(f"Failed to meet characteristics: {str(e)}")
+
+    def wait_until_url_matches_domain(self, base_url: str) -> bool:
+        """
+        Wait until the current URL matches the provided base URL.
+
+        Args:
+            base_url: The base URL to match against (domain name)
+
+        Returns:
+            bool: True if the condition is met within the timeout
+
+        Raises:
+            Exception: If the URL doesn't match within the timeout
+        """
+        wait = WebDriverWait(self.driver, 60)
+
+        try:
+            wait.until(lambda driver: driver.current_url.startswith(base_url))
+            return True
+        except Exception as e:
+            raise Exception(f"URL did not match {base_url} within timeout: {str(e)}")

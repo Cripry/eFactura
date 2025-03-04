@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, Union
+from domain.task.schemas import SignatureType
 from machine.domain.models.dataclass.dataclass import Worker
 from selenium.webdriver.common.by import By
 import time
@@ -19,14 +20,6 @@ class EfacturaWebPage:
         self.worker = worker
         self.web_handler = web_handler
         self.logger = logging.getLogger(__name__)
-
-    def navigate_to_section(self, section_name: str) -> bool:
-        """Navigate to specific section of eFactura"""
-        raise NotImplementedError
-
-    def perform_action(self, action_name: str, *args) -> Optional[bool]:
-        """Perform generic action on eFactura page"""
-        raise NotImplementedError
 
     def find_invoice_by_seria_and_number(self, seria: str, number: str) -> bool:
         """Find invoice by seria and number"""
@@ -146,7 +139,9 @@ class EfacturaWebPage:
             self.logger.error(f"Failed to click checkbox: {str(e)}")
             raise
 
-    def start_signing_procedure(self) -> bool:
+    def start_signing_procedure(
+        self, signature_type: Union[SignatureType, None] = None
+    ) -> bool:
         """Start the signing procedure for selected invoices"""
         self.logger.info("Starting signing procedure")
 
@@ -164,6 +159,17 @@ class EfacturaWebPage:
                 ComponentCharacteristics.SIGN_CONFIRMATION_POPUP
             )
 
+            if signature_type == SignatureType.SHORT:
+                self.web_handler.wait.wait_for_web_element_clickable(
+                    EFacturaSelectors.SHORT_RADIO_BUTTON.value
+                ).click()
+            elif signature_type == SignatureType.LONG:
+                self.web_handler.wait.wait_for_web_element_clickable(
+                    EFacturaSelectors.LONG_RADIO_BUTTON.value
+                ).click()
+
+            time.sleep(2)
+
             # 3. Click final sign button
             self.logger.info("Clicking final sign button")
             final_sign_button = self.web_handler.wait.wait_for_web_element_clickable(
@@ -178,12 +184,14 @@ class EfacturaWebPage:
             self.logger.error(f"Failed to start signing procedure: {str(e)}")
             return False
 
-    def _complete_signing_process(self) -> bool:
+    def _complete_signing_process(
+        self, signature_type: Union[SignatureType, None] = None
+    ) -> bool:
         """Complete the signing process (common for both roles)"""
         self.logger.info("Starting signing procedure")
 
         # 1. Start eFactura signing process
-        if not self.start_signing_procedure():
+        if not self.start_signing_procedure(signature_type):
             raise Exception("Failed to start signing procedure")
 
         # 2. Complete MSign signing

@@ -63,7 +63,7 @@ class MachineHandler:
                         exc_info=True,
                     )
                     # Add failed status for all tasks of this company
-                    for task in tasks:
+                    for task in invoice_tasks:
                         all_results.append(
                             TaskStatusUpdate(
                                 task_uuid=task["task_uuid"], status=TaskStatus.FAILED
@@ -73,50 +73,56 @@ class MachineHandler:
         return all_results
 
     def process_multiple_invoice_tasks(
-        self, tasks: List[dict]
+        self, tasks_by_company: List[dict]
     ) -> List[TaskStatusUpdate]:
         """Process multiple invoice tasks"""
         all_results = []
 
-        for task in tasks:
-            try:
-                my_company_idno = task["my_company_idno"]
+        try:
+            for certificate_name, company_tasks in tasks_by_company.items():
+                for my_company_idno, invoice_tasks in company_tasks.items():
 
-                # Initialize new driver and handlers for each task
-                driver = self.driver_manager.get_driver()
-                web_handler = SeleniumLoginHandler(driver, self.environment)
-                desktop_handler = MSignDesktopHandler()
+                    # Initialize new driver and handlers for each company
+                    driver = self.driver_manager.get_driver()
+                    web_handler = SeleniumLoginHandler(driver, self.environment)
+                    desktop_handler = MSignDesktopHandler()
 
-                # Initialize services
-                login_service = LoginService(web_handler, desktop_handler)
-                task_executor = TaskExecutor(web_handler, desktop_handler)
+                    # Initialize services
+                    login_service = LoginService(web_handler, desktop_handler)
+                    task_executor = TaskExecutor(web_handler, desktop_handler)
 
-                try:
                     # Get PIN and create worker
                     pin = USB_PIN.get_pin(my_company_idno)
-                    worker = Worker(my_company_idno=my_company_idno, pin=pin)
+                    worker = Worker(
+                        my_company_idno=my_company_idno,
+                        pin=pin,
+                        person_name_certificate=certificate_name,
+                    )
 
                     # Login worker
                     login_service.login_worker(worker)
 
                     # Execute task with worker instance
-                    result = task_executor.execute_multiple_invoice_tasks(worker, task)
+
+                    result = task_executor.execute_multiple_invoice_tasks(
+                        worker, invoice_tasks
+                    )
                     all_results.append(result)
 
-                finally:
-                    # Always close the driver
-                    self.driver_manager.close_driver(driver)
+        except Exception as e:
+            self.logger.error(
+                f"Failed to process task for company {invoice_tasks.get('my_company_idno')}: {str(e)}",
+                exc_info=True,
+            )
+            all_results.append(
+                TaskStatusUpdate(
+                    task_uuid=invoice_tasks.get("task_uuid"), status=TaskStatus.FAILED
+                )
+            )
 
-            except Exception as e:
-                self.logger.error(
-                    f"Failed to process task for company {task.get('my_company_idno')}: {str(e)}",
-                    exc_info=True,
-                )
-                all_results.append(
-                    TaskStatusUpdate(
-                        task_uuid=task.get("task_uuid"), status=TaskStatus.FAILED
-                    )
-                )
+        finally:
+            # Always close the driver
+            self.driver_manager.close_driver(driver)
 
         return all_results
 
