@@ -131,6 +131,60 @@ class SeleniumLoginHandler:
             self.logger.error(f"Web authentication failed: {str(e)}")
             raise Exception(f"Web authentication failed: {str(e)}")
 
+    def _find_and_select_company(self, worker: Worker) -> bool:
+        """Helper method to find and select company with dynamic loading"""
+        self.logger.debug("Starting dynamic company search")
+
+        seen_companies = set()  # Track all seen companies
+        no_new_companies_count = 0  # Counter for consecutive no-new-companies
+        max_no_new_companies = 4  # Max attempts with no new companies
+
+        while no_new_companies_count < max_no_new_companies:
+            # Get current list of companies
+            companies_container = self.wait.wait_for_web_element(
+                LoginPageSelectors.COMPANIES_LIST.value
+            )
+            current_companies = companies_container.find_elements(
+                *LoginPageSelectors.COMPANY_ITEMS.value
+            )
+
+            # Track if we found new companies in this iteration
+            found_new = False
+
+            for company in current_companies:
+                company_text = company.text
+
+                # Skip if we've already seen this company
+                if company_text in seen_companies:
+                    continue
+
+                # Add to seen companies
+                seen_companies.add(company_text)
+                found_new = True
+
+                # Check if this is our target company
+                if worker.my_company_idno in company_text:
+                    self.logger.info(
+                        f"Found company with my_company_idno {worker.my_company_idno}"
+                    )
+                    company.click()
+                    return True
+
+            # If no new companies were found, increment counter
+            if not found_new:
+                no_new_companies_count += 1
+            else:
+                no_new_companies_count = 0  # Reset counter if we found new companies
+
+            # Scroll to last element to trigger loading of new companies
+            if current_companies:
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView();", current_companies[-1]
+                )
+                time.sleep(2)  # Wait for new companies to load
+
+        return False
+
     def select_company_and_role(self, worker: Worker) -> None:
         """Select company and role after successful authentication"""
         self.logger.info("Starting company and role selection")
@@ -140,7 +194,6 @@ class SeleniumLoginHandler:
             person_type_select = self.wait.wait_for_web_element(
                 LoginPageSelectors.PERSON_TYPE_SELECT.value
             )
-            # Remove debug bar
             self._remove_debug_bar()
 
             select = Select(person_type_select)
@@ -155,25 +208,8 @@ class SeleniumLoginHandler:
             company_dropdown.click()
             time.sleep(2)
 
-            # Find company by my_company_idno
-            companies_container = self.wait.wait_for_web_element(
-                LoginPageSelectors.COMPANIES_LIST.value
-            )
-            companies = companies_container.find_elements(
-                *LoginPageSelectors.COMPANY_ITEMS.value
-            )
-
-            company_found = False
-            for company in companies:
-                if worker.my_company_idno in company.text:
-                    self.logger.info(
-                        f"Found company with my_company_idno {worker.my_company_idno}"
-                    )
-                    company.click()
-                    company_found = True
-                    break
-
-            if not company_found:
+            # Use new dynamic company search method
+            if not self._find_and_select_company(worker):
                 raise Exception(
                     f"Company with my_company_idno {worker.my_company_idno} not found"
                 )
