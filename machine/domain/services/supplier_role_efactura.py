@@ -45,7 +45,17 @@ class SupplierRoleEfactura(EfacturaWebPage):
         self._select_all_invoices()
 
         # 3. Apply first signature
-        self._complete_signing_process()
+        self.logger.info("Starting signing procedure")
+
+        # Start eFactura signing process
+        if not self.start_signing_procedure(EFacturaSelectors.START_SIGN_BUTTON_NEW_INVOICE_PAGE.value):
+            raise Exception("Failed to start signing procedure")
+
+        # Complete MSign signing
+        if not self.msign_service.complete_signing(
+            self.worker.person_name_certificate, self.worker.pin
+        ):
+            raise Exception("Failed to complete MSign signing")
 
         # 4. Wait until all invoices are signed
         self._wait_until_all_invoices_signed()
@@ -56,8 +66,15 @@ class SupplierRoleEfactura(EfacturaWebPage):
         # 6. Select all invoices for second signature
         self._select_all_invoices()
 
-        # 7. Apply second signature
-        self._complete_signing_process(signature_type)
+        # Start eFactura signing process
+        if not self.start_signing_procedure(EFacturaSelectors.START_SIGN_BUTTON_APPLIED_FIRST_SIGNATURE_PAGE.value, signature_type):
+            raise Exception("Failed to start signing procedure")
+
+        # Complete MSign signing
+        if not self.msign_service.complete_signing(
+            self.worker.person_name_certificate, self.worker.pin
+        ):
+            raise Exception("Failed to complete MSign signing")
 
         # 8. Wait until all invoices are signed
         self._wait_until_all_invoices_signed()

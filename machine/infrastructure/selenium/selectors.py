@@ -47,7 +47,9 @@ class EFacturaSelectors(Enum):
         By.XPATH,
         '//*[@id="content"]/div[3]/div/div[3]/div[1]/table/tbody',
     )
-    START_SIGN_BUTTON = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[3]')
+    START_SIGN_BUTTON_NEW_INVOICE_PAGE = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[3]')
+    START_SIGN_BUTTON_APPLIED_FIRST_SIGNATURE_PAGE = (By.XPATH, '//*[@id="content"]/div[3]/div/div[2]/div[1]/a[2]')
+
     FINAL_SIGN_BUTTON = (By.XPATH, '//*[@id="btnSign"]')
     SELECT_ALL_CHECKBOX = (
         By.XPATH,

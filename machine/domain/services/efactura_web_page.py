@@ -141,7 +141,7 @@ class EfacturaWebPage:
             raise
 
     def start_signing_procedure(
-        self, signature_type: Union[SignatureType, None] = None
+        self, start_sign_button_selector, signature_type: Union[SignatureType, None] = None
     ) -> bool:
         """Start the signing procedure for selected invoices"""
         self.logger.info("Starting signing procedure")
@@ -150,7 +150,7 @@ class EfacturaWebPage:
             # 1. Click start sign button
             self.logger.info("Clicking start sign button")
             start_sign_button = self.web_handler.wait.wait_for_web_element_clickable(
-                EFacturaSelectors.START_SIGN_BUTTON.value
+                start_sign_button_selector
             )
             start_sign_button.click()
 
@@ -189,17 +189,7 @@ class EfacturaWebPage:
         self, signature_type: Union[SignatureType, None] = None
     ) -> bool:
         """Complete the signing process (common for both roles)"""
-        self.logger.info("Starting signing procedure")
 
-        # 1. Start eFactura signing process
-        if not self.start_signing_procedure(signature_type):
-            raise Exception("Failed to start signing procedure")
-
-        # 2. Complete MSign signing
-        if not self.msign_service.complete_signing(
-            self.worker.person_name_certificate, self.worker.pin
-        ):
-            raise Exception("Failed to complete MSign signing")
 
         return True
 
