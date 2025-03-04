@@ -157,6 +157,7 @@ class SeleniumLoginHandler:
         # Move mouse to the center of the container
         actions.move_to_element_with_offset(companies_container, 0, 0).perform()
         actions.move_by_offset(center_x, center_y).perform()
+        actions.scroll_by_amount(0, 200).perform()
         time.sleep(0.5)
 
         while no_new_companies_count < max_no_new_companies:
