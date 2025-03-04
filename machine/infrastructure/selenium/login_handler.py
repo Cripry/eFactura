@@ -155,8 +155,11 @@ class SeleniumLoginHandler:
         time.sleep(0.5)
 
         # 2. Hover to the first company element from the container
-        first_company = self.wait.wait_for_web_element(
-            *LoginPageSelectors.COMPANY_ITEMS.value, parent=companies_container
+        # First wait for companies to be present in the container
+        self.wait.wait_for_web_elements(*LoginPageSelectors.COMPANY_ITEMS.value)
+        # Then find the first company within the container
+        first_company = companies_container.find_element(
+            *LoginPageSelectors.COMPANY_ITEMS.value
         )
         actions.move_to_element(first_company).perform()
         time.sleep(0.5)
