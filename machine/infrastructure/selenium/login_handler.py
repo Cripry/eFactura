@@ -414,6 +414,9 @@ class SeleniumLoginHandler:
         self.logger.info("Looking for e-Factura block...")
         time.sleep(2)  # Wait for blocks to load
 
+        # scroll by 250 pixels
+        self.driver.execute_script("window.scrollBy(0, 250);")
+
         services_blocks = self.wait.wait_for_web_elements(
             SFSSelectors.EFACTURA_BLOCK.value
         )
