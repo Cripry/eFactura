@@ -37,7 +37,7 @@ class MachineHandler:
 
                     try:
                         # Get PIN and create worker
-                        pin = USB_PIN.get_pin(my_company_idno)
+                        pin = USB_PIN.get_pin(certificate_name)
                         worker = Worker(
                             my_company_idno=my_company_idno,
                             pin=pin,
@@ -92,7 +92,7 @@ class MachineHandler:
                     task_executor = TaskExecutor(web_handler, desktop_handler)
 
                     # Get PIN and create worker
-                    pin = USB_PIN.get_pin(my_company_idno)
+                    pin = USB_PIN.get_pin(certificate_name)
                     worker = Worker(
                         my_company_idno=my_company_idno,
                         pin=pin,
