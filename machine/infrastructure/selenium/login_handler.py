@@ -148,16 +148,17 @@ class SeleniumLoginHandler:
         # Create ActionChains instance for mouse actions
         actions = ActionChains(self.driver)
 
-        # Calculate container's center position
-        container_size = companies_container.size
-        container_location = companies_container.location
-        center_x = container_location["x"] + (container_size["width"] / 2)
-        center_y = container_location["y"] + (container_size["height"] / 2)
+        # 1. Scroll entire page by 30% of page height
+        page_height = self.driver.execute_script("return window.innerHeight")
+        scroll_amount = int(page_height * 0.3)
+        self.driver.execute_script(f"window.scrollBy(0, {scroll_amount});")
+        time.sleep(0.5)
 
-        # Move mouse to the center of the container
-        actions.move_to_element_with_offset(companies_container, 0, 0).perform()
-        actions.move_by_offset(center_x, center_y).perform()
-        actions.scroll_by_amount(0, 200).perform()
+        # 2. Hover to the first company element from the container
+        first_company = self.wait.wait_for_web_element(
+            *LoginPageSelectors.COMPANY_ITEMS.value, parent=companies_container
+        )
+        actions.move_to_element(first_company).perform()
         time.sleep(0.5)
 
         while no_new_companies_count < max_no_new_companies:
@@ -194,10 +195,12 @@ class SeleniumLoginHandler:
             else:
                 no_new_companies_count = 0  # Reset counter if we found new companies
 
-            # Simulate mouse wheel scroll within the container
+            # 3. Scroll within the container
             if current_companies:
-                # Scroll down by 100 pixels
-                actions.scroll_by_amount(0, 100).perform()
+                # Scroll down by 100 pixels within the container
+                self.driver.execute_script(
+                    "arguments[0].scrollBy(0, 100);", companies_container
+                )
                 time.sleep(1)  # Wait for new companies to load
 
         return False
