@@ -145,14 +145,19 @@ class SeleniumLoginHandler:
             LoginPageSelectors.COMPANIES_LIST.value
         )
 
-        # Focus on the container by moving mouse to it
-        self.driver.execute_script(
-            "arguments[0].scrollIntoView();", companies_container
-        )
-        time.sleep(0.5)
-
         # Create ActionChains instance for mouse actions
         actions = ActionChains(self.driver)
+
+        # Calculate container's center position
+        container_size = companies_container.size
+        container_location = companies_container.location
+        center_x = container_location["x"] + (container_size["width"] / 2)
+        center_y = container_location["y"] + (container_size["height"] / 2)
+
+        # Move mouse to the center of the container
+        actions.move_to_element_with_offset(companies_container, 0, 0).perform()
+        actions.move_by_offset(center_x, center_y).perform()
+        time.sleep(0.5)
 
         while no_new_companies_count < max_no_new_companies:
             # Get current list of companies within the container
@@ -190,13 +195,9 @@ class SeleniumLoginHandler:
 
             # Simulate mouse wheel scroll within the container
             if current_companies:
-                # Move mouse to the container
-                actions.move_to_element(companies_container).perform()
-                time.sleep(0.2)
-
-                # Scroll down using mouse wheel
-                actions.scroll_by_amount(0, 300).perform()  # Scroll 300 pixels down
-                time.sleep(2)  # Wait for new companies to load
+                # Scroll down by 100 pixels
+                actions.scroll_by_amount(0, 100).perform()
+                time.sleep(1)  # Wait for new companies to load
 
         return False
 
