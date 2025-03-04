@@ -200,32 +200,38 @@ class SeleniumLoginHandler:
 
             # 3. Scroll within the container
             if current_companies:
-                # Use JavaScript to position mouse in the middle of the dropdown and scroll
+                # Get dropdown area element using Selenium
+                dropdown_area = self.driver.find_element(
+                    *LoginPageSelectors.SELECT_AREA_DROPDOWN.value
+                )
+
+                # Get element location and size using Selenium
+                location = dropdown_area.location
+                size = dropdown_area.size
+
+                # Calculate middle coordinates
+                middle_x = location["x"] + (size["width"] / 2)
+                middle_y = location["y"] + (size["height"] / 2)
+
+                # Use JavaScript to position mouse and scroll
                 self.driver.execute_script(
                     """
-                    // Get the dropdown area element
-                    const dropdownArea = document.querySelector(arguments[1]);
-                    
-                    // Calculate middle position
-                    const rect = dropdownArea.getBoundingClientRect();
-                    const middleX = rect.left + (rect.width / 2);
-                    const middleY = rect.top + (rect.height / 2);
-                    
-                    // Create and dispatch mouseover event at the middle position
+                    // Create and dispatch mouseover event at the specified position
                     const mouseOverEvent = new MouseEvent('mouseover', {
                         view: window,
                         bubbles: true,
                         cancelable: true,
-                        clientX: middleX,
-                        clientY: middleY
+                        clientX: arguments[1],
+                        clientY: arguments[2]
                     });
-                    dropdownArea.dispatchEvent(mouseOverEvent);
+                    document.dispatchEvent(mouseOverEvent);
                     
                     // Scroll the container by 200 pixels
                     arguments[0].scrollBy(0, 200);
                 """,
                     companies_container,
-                    LoginPageSelectors.SELECT_AREA_DROPDOWN.value[1],
+                    middle_x,
+                    middle_y,
                 )
 
                 time.sleep(1)  # Wait for new companies to load
