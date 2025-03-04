@@ -43,7 +43,7 @@ class SupplierRoleEfactura(EfacturaWebPage):
         self._select_buyer(company_idno)
 
         # 3. Apply first signature
-        self._complete_signing_process(signature_type)
+        self._complete_signing_process()
 
         # 4. Wait until all invoices are signed
         self._wait_until_all_invoices_signed()
