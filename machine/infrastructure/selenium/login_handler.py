@@ -26,6 +26,7 @@ from machine.domain.models.navigation.urls import (
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
+import pyautogui
 
 
 def is_name_contained(search_term: str, text: str) -> bool:
@@ -198,42 +199,24 @@ class SeleniumLoginHandler:
             else:
                 no_new_companies_count = 0  # Reset counter if we found new companies
 
-            # 3. Scroll within the container
+            # 3. Scroll within the container using pyautogui
             if current_companies:
                 # Get dropdown area element using Selenium
                 dropdown_area = self.driver.find_element(
                     *LoginPageSelectors.SELECT_AREA_DROPDOWN.value
                 )
 
-                # Get element location and size using Selenium
+                # Move mouse to the center of the dropdown area
                 location = dropdown_area.location
                 size = dropdown_area.size
+                center_x = location["x"] + (size["width"] / 2)
+                center_y = location["y"] + (size["height"] / 2)
 
-                # Calculate middle coordinates
-                middle_x = location["x"] + (size["width"] / 2)
-                middle_y = location["y"] + (size["height"] / 2)
+                # Move mouse to the center position
+                pyautogui.moveTo(center_x, center_y, duration=0.5)
 
-                # Use JavaScript to position mouse and scroll
-                self.driver.execute_script(
-                    """
-                    // Create and dispatch mouseover event at the specified position
-                    const mouseOverEvent = new MouseEvent('mouseover', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        clientX: arguments[1],
-                        clientY: arguments[2]
-                    });
-                    document.dispatchEvent(mouseOverEvent);
-                    
-                    // Scroll the container by 200 pixels
-                    arguments[0].scrollBy(0, 200);
-                """,
-                    companies_container,
-                    middle_x,
-                    middle_y,
-                )
-
+                # Simulate mouse wheel scroll
+                pyautogui.scroll(-200)  # Negative value scrolls down
                 time.sleep(1)  # Wait for new companies to load
 
         return False
