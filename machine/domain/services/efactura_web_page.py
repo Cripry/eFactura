@@ -169,7 +169,7 @@ class EfacturaWebPage:
                     EFacturaSelectors.LONG_RADIO_BUTTON.value
                 ).click()
 
-            time.sleep(1)
+            time.sleep(2)
 
             # 3. Click final sign button
             self.logger.info("Clicking final sign button")
