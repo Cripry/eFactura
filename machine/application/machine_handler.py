@@ -111,7 +111,7 @@ class MachineHandler:
 
         except Exception as e:
             self.logger.error(
-                f"Failed to process task for company {invoice_tasks.get('my_company_idno')}: {str(e)}",
+                f"Failed to process task for person: {certificate_name} and company idno: {my_company_idno}: {str(e)}",
                 exc_info=True,
             )
             all_results.append(
